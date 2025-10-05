@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Field Analysis | KrushiBher</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --text-color: #222222;
+      --text-highlight-color: #444444;
+      --shadow-color: rgba(0, 0, 0, 0.15);
+      --glow-color: rgba(68,68,68,0.5);
+      --font-serif: 'Playfair Display', serif;
+      --font-sans: 'Roboto', sans-serif;
+      --green: #4CAF50;
+    }
+    html, body {
+      margin: 0; padding: 0;
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      color: var(--text-color);
+      background: url('{{ url_for('static', filename='images/background.jpg') }}') no-repeat center center fixed;
+      background-size: cover;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    @keyframes fadeInUp {
+      0% {opacity: 0; transform: translateY(40px);}
+      100% {opacity: 1; transform: translateY(0);}
+    }
+    @keyframes floatUpDown {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+    @keyframes pulseTitle {
+      0%, 100% {text-shadow: 0 2px 8px rgba(76, 175, 80, 0.6);}
+      50% {text-shadow: 0 2px 18px rgba(76, 175, 80, 0.9);}
+    }
+    .header {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    }
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 70px;
+    }
+    .logo {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+    margin-left: -60px;
+    margin-right: 50px;
+}
+    .logo-image {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .logo-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+    .logo-text {
+      font-size: 24px;
+      font-weight: 700;
+      color: #000000;
+    }
+    nav.navigation {
+      display: flex;
+      gap: 30px;
+      user-select: none;
+      font-size: 14px;
+    }
+    .navigation {
+      display: flex;
+      gap: 25px;
+      background: transparent;
+      align-items: center;
+    }
+    .nav-link {
+      text-decoration: none;
+      color: #151515;
+      font-weight: 500;
+      transition: color 0.3s ease;
+      position: relative;
+    }
+    .nav-link:hover,
+    .nav-link.active {
+      color: #4CAF50;
+    }
+    .nav-link.active::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: #4CAF50;
+      border-radius: 1px;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      font-size: 14px;
+    }
+    .signup-btn {
+      background: linear-gradient(135deg, #4CAF50, #45a049);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 25px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .signup-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+    }
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+    .dropbtn {
+      background: none;
+      border: none;
+      color: white;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 16px;
+      border-radius: 14px;
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+    .dropbtn:hover {
+      background: var(--green);
+      color: #111;
+      box-shadow: 0 0 12px var(--glow-color);
+    }
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background: var(--green);
+      min-width: 150px;
+      box-shadow: 0 8px 24px rgba(76,175,80,0.3);
+      border-radius: 14px;
+      right: 0;
+      overflow: hidden;
+      user-select: none;
+    }
+    .dropdown-content a {
+      color: #222;
+      padding: 12px 18px;
+      display: block;
+      text-decoration: none;
+      font-weight: 600;
+      transition: background 0.25s ease;
+    }
+    .dropdown-content a:hover {
+      background: #45a049;
+      color: #111;
+      box-shadow: 0 0 12px var(--glow-color);
+    }
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+    main {
+      max-width: 1150px;
+      margin: 0 auto 50px auto;
+      background: transparent;
+      border-radius: var(--radius-xl);
+      padding: 3rem 4rem;
+    }
+    section {
+      margin-bottom: 60px;
+      animation: fadeInUp 1s ease forwards;
+      position: relative;
+      overflow: hidden;
+    }
+    #ndvi {
+      margin-top: 90px;
+    }
+    h2 {
+      font-family: var(--font-serif);
+      font-weight: 900;
+      color: var(--text-color);
+      margin-bottom: 0.8rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      position: relative;
+      animation: pulseTitle 3s ease-in-out infinite;
+    }
+    h2::after {
+      content: "";
+      display: block;
+      width: 100px;
+      height: 3px;
+      background: var(--text-highlight-color);
+      border-radius: 3px;
+      margin-top: 8px;
+      box-shadow: 0 0 10px var(--glow-color);
+    }
+    p, li, span {
+      font-family: var(--font-sans);
+      font-weight: 500;
+      font-size: 1.15rem;
+      line-height: 1.8;
+      color: var(--text-color);
+      letter-spacing: 0.02em;
+      transition: color 0.3s ease;
+    }
+    p strong, li strong {
+      color: var(--text-highlight-color);
+      font-weight: 700;
+      text-shadow: 0 1px 3px var(--glow-color);
+    }
+    p:hover, li:hover {
+      color: var(--text-highlight-color);
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: var(--radius-lg);
+      border: 1.5px solid rgba(68, 68, 68, 0.35);
+      padding: 2.5rem 2.8rem;
+      backdrop-filter: blur(25px);
+      box-shadow:
+        inset 0 0 30px rgba(255, 255, 255, 0.4),
+        0 8px 40px rgba(68, 68, 68, 0.3);
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+      cursor: default;
+      color: var(--text-color);
+      text-shadow: 0 0 4px rgba(255, 255, 255, 0.7);
+      animation: floatUpDown 6s ease-in-out infinite;
+    }
+    .glass-card:hover {
+      animation: none;
+      transform: translateY(-10px) scale(1.04);
+      box-shadow:
+        inset 0 0 40px rgba(255, 255, 255, 0.6),
+        0 20px 60px rgba(68, 68, 68, 0.85);
+      z-index: 10;
+      color: #111;
+      text-shadow: 0 0 6px rgba(255, 255, 255, 0.9);
+    }
+    .ndvi-value, .health-score, .weather-label, .advice-list li {
+      font-family: var(--font-sans);
+      font-weight: 900;
+      font-size: 1.5rem;
+      color: var(--text-highlight-color);
+      text-shadow: 0 0 6px rgba(68, 68, 68, 0.7);
+      cursor: default;
+      user-select: none;
+      transition: color 0.3s ease, text-shadow 0.3s ease;
+    }
+    .ndvi-value:hover, .health-score:hover, .weather-label:hover, .advice-list li:hover {
+      color: #222;
+      text-shadow: 0 0 14px rgba(34, 34, 34, 0.9);
+    }
+    .health-score {
+      font-size: 1.8rem;
+      background-color: var(--green);
+      color: white;
+      padding: 0.5rem 1.6rem;
+      border-radius: 25px;
+      box-shadow: 0 0 15px var(--green);
+      display: inline-block;
+      user-select: none;
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+    }
+    .health-score:hover {
+      transform: scale(1.12);
+      box-shadow: 0 0 30px var(--green);
+    }
+    .weather-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 30px;
+      margin-top: 1.5rem;
+    }
+    .weather-field {
+      background: #f4f4f4;
+      padding: 20px 25px;
+      border-radius: var(--radius-lg);
+      text-align: center;
+      box-shadow: 0 5px 15px rgba(68, 68, 68, 0.2);
+      color: #444444;
+      font-weight: 600;
+      cursor: default;
+      user-select: none;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+    }
+    .weather-field:hover {
+      background-color: #d9f0d9;
+      box-shadow: 0 15px 35px rgba(56, 142, 60, 0.7);
+      color: #2e7d32;
+    }
+    .weather-label {
+      font-weight: 700;
+      margin-bottom: 10px;
+      font-size: 1rem;
+      color: #555555;
+    }
+    .advice-list {
+      list-style: none;
+      padding-left: 0;
+      margin-top: 1em;
+    }
+    .advice-list li {
+      font-size: 1.3rem;
+      padding: 14px 16px;
+      border-radius: 22px;
+      box-shadow: 0 6px 22px rgba(102, 187, 106, 0.45);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      background-color: #f9f9f9;
+      color: #444;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+      cursor: default;
+    }
+    .advice-list li:hover {
+      background-color: #e0f2f1;
+      box-shadow: 0 12px 30px rgba(38, 166, 154, 0.7);
+      transform: translateY(-5px) scale(1.02);
+    }
+    .advice-icon {
+      font-size: 1.8rem;
+      transition: transform 0.3s ease;
+    }
+    .advice-list li:hover .advice-icon {
+      transform: scale(1.3);
+    }
+    @media (max-width: 768px) {
+      .header-content {
+        flex-direction: column;
+        height: auto;
+        padding: 15px 20px;
+        gap: 15px;
+      }
+      .navigation {
+        gap: 15px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      main {
+        padding: 120px 20px 50px 20px;
+        margin: 0 auto;
+      }
+      .footer-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 30px;
+      }
+    }
+    .footer {
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+      color: #ffffff;
+      padding: 50px 0 25px;
+      margin-top: 0;
+      border-top: 4px solid transparent;
+      border-image: linear-gradient(90deg, #4CAF50, #45a049, #66BB6A, #4CAF50) 1;
+      position: relative;
+      overflow: hidden;
+    }
+    .footer::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image: 
+        radial-gradient(circle at 20% 80%, rgba(76, 175, 80, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(76, 175, 80, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(76, 175, 80, 0.05) 0%, transparent 50%);
+      animation: backgroundShift 15s ease-in-out infinite;
+      z-index: 0;
+    }
+    @keyframes backgroundShift {
+      0%, 100% { opacity: 0.3; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.1); }
+    }
+    .footer::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #4CAF50, #45a049, #66BB6A, #4CAF50);
+      background-size: 200% 100%;
+      animation: borderGlow 3s ease-in-out infinite;
+      z-index: 1;
+    }
+    @keyframes borderGlow {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto 40px auto;
+      padding: 0 20px;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 40px;
+      position: relative;
+      z-index: 2;
+    }
+    .footer-brand {
+      flex: 1 1 250px;
+    }
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .footer-logo img {
+      width: 32px;
+      height: 32px;
+    }
+    .footer-logo .logo-text {
+      font-size: 26px;
+      font-weight: 700;
+      color: #4CAF50;
+      text-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+      transition: all 0.3s ease;
+      user-select: none;
+    }
+    .footer-logo:hover .logo-text {
+      text-shadow: 0 0 20px rgba(76, 175, 80, 0.6);
+      transform: scale(1.05);
+    }
+    .footer-description {
+      color: #cccccc;
+      line-height: 1.6;
+      margin-bottom: 20px;
+      font-size: 14px;
+      max-width: 300px;
+    }
+    .footer-links-section {
+      display: flex;
+      gap: 60px;
+      flex-wrap: wrap;
+    }
+    .footer-column {
+      min-width: 120px;
+    }
+    .footer-title {
+      color: #4CAF50;
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 18px;
+      position: relative;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      user-select: none;
+    }
+    .footer-title::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 30px;
+      height: 2px;
+      background: linear-gradient(90deg, #4CAF50, #66BB6A);
+      border-radius: 1px;
+      transition: width 0.3s ease;
+    }
+    .footer-column:hover .footer-title::after {
+      width: 50px;
+    }
+    .footer-links {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .footer-links li {
+      margin-bottom: 8px;
+    }
+    .footer-links a {
+      color: #cccccc;
+      text-decoration: none;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      position: relative;
+      display: inline-block;
+    }
+    .footer-links a::before {
+      content: '';
+      position: absolute;
+      left: -15px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 1px;
+      background: #4CAF50;
+      transition: width 0.3s ease;
+    }
+    .footer-links a:hover {
+      color: #4CAF50;
+      transform: translateX(8px);
+      text-shadow: 0 0 8px rgba(76, 175, 80, 0.4);
+    }
+    .footer-links a:hover::before {
+      width: 10px;
+    }
+    .footer-social {
+      display: flex;
+      gap: 15px;
+      margin-top: 15px;
+    }
+    .social-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #333333, #404040);
+      border-radius: 10px;
+      color: #cccccc;
+      text-decoration: none;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    .social-link::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(76, 175, 80, 0.3), transparent);
+      transition: left 0.6s ease;
+    }
+    .social-link:hover::before {
+      left: 100%;
+    }
+    .social-link:hover {
+      background: linear-gradient(135deg, #4CAF50, #66BB6A);
+      color: white;
+      transform: translateY(-4px) scale(1.1);
+      box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+    }
+  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles-global.css') }}" />
+</head>
+<body class="space-theme">
+  {% if not session.user_id %}
+    <script>
+      alert('Please login to access this page.');
+      window.location.href = '{{ url_for('login') }}';
+    </script>
+  {% endif %}
+  <div class="hero-section space-hero">
+    <header class="header space-header">
+      <div class="header-content">
+        <div class="logo">
+          <div class="logo-image">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="KrushiBher Logo" />
+          </div>
+          <span class="logo-text">KrushiBher</span>
+        </div>
+        <nav class="navigation">
+          <a href="{{ url_for('index') }}" class="nav-link">Home</a>
+          <a href="{{ url_for('cropanalysis') }}" class="nav-link">Crop Analysis</a>
+          <a href="{{ url_for('field_analysis', field_id=field_id) }}" class="nav-link active">Field Analysis</a>
+          <a href="{{ url_for('field_dashboard') }}" class="nav-link">Field Dashboard</a>
+          <a href="{{ url_for('mapping') }}" class="nav-link">Mapping</a>
+          <a href="{{ url_for('weather') }}" class="nav-link">Weather</a>
+          <a href="{{ url_for('report') }}" class="nav-link">Report</a>
+          <a href="{{ url_for('about') }}" class="nav-link">About Us</a>
+        </nav>
+        <div class="header-actions">
+          <div class="dropdown">
+            <button class="dropbtn">Select Field</button>
+            <div class="dropdown-content">
+              {% for field in fields %}
+                <a href="{{ url_for('field_analysis', field_id=field.id) }}">{{ field.name }}</a>
+              {% endfor %}
+            </div>
+          </div>
+          <a href="{{ url_for('logout') }}" class="signup-btn">Logout</a>
+        </div>
+      </div>
+    </header>
+    <main>
+      <section id="ndvi" class="glass-card" style="margin-top: 90px;">
+        <h2>NDVI Index</h2>
+        <div class="ndvi-value" id="ndvi-mean">{{ field_data.ndvi }}</div>
+        <p>The <strong>Normalized Difference Vegetation Index</strong> (NDVI) helps monitor plant growth and assess field health using satellite data.</p>
+      </section>
+      <section id="evi" class="glass-card">
+        <h2>EVI Index</h2>
+        <div class="evi-info" id="evi-info">
+          The <strong>Enhanced Vegetation Index</strong> (EVI) provides improved sensitivity for higher biomass regions. Useful for monitoring crop vigor.
+        </div>
+      </section>
+      <section id="health" class="glass-card">
+        <h2>Crop Health</h2>
+        <p>Status: <span class="health-score" id="health-score">{{ field_data.health_status }}</span></p>
+        <p>This section displays the crop health trend based on NDVI, EVI, and field data analytics.</p>
+      </section>
+      <section id="weather" class="glass-card">
+        <h2>Farm Weather</h2>
+        <div class="weather-grid">
+          <div class="weather-field">
+            <div class="weather-label">Temperature</div>
+            <span id="temperature">{{ field_data.weather.temperature }}°C</span>
+          </div>
+          <div class="weather-field">
+            <div class="weather-label">Rainfall</div>
+            <span id="rainfall">{{ field_data.weather.rainfall }} mm</span>
+          </div>
+          <div class="weather-field">
+            <div class="weather-label">Humidity</div>
+            <span id="humidity">{{ field_data.weather.humidity }}%</span>
+          </div>
+          <div class="weather-field">
+            <div class="weather-label">Wind</div>
+            <span id="wind">{{ field_data.weather.wind }} km/h</span>
+          </div>
+          <div class="weather-field">
+            <div class="weather-label">Soil Moisture</div>
+            <span id="soilmoisture">{{ field_data.weather.soil_moisture }}%</span>
+          </div>
+        </div>
+      </section>
+      <section id="info" class="glass-card">
+        <h2>Advice & Recommendations</h2>
+        <ul class="advice-list">
+          {% for advice in field_data.advice %}
+            <li><span class="advice-icon">{{ advice.icon }}</span> {{ advice.text }}</li>
+          {% endfor %}
+        </ul>
+      </section>
+    </main>
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-brand">
+            <div class="footer-logo">
+              <div class="logo-image">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="KrushiBher Logo" />
+              </div>
+              <span class="logo-text">KrushiBher</span>
+            </div>
+            <p class="footer-description">
+              Empowering farmers with intelligent technology for sustainable agriculture.
+            </p>
+            <div class="footer-social">
+              <a href="#" class="social-link" aria-label="Facebook">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+              </a>
+              <a href="#" class="social-link" aria-label="Twitter">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                </svg>
+              </a>
+              <a href="#" class="social-link" aria-label="LinkedIn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                </svg>
+              </a>
+              <a href="#" class="social-link" aria-label="Instagram">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+          <div class="footer-links-section">
+            <div class="footer-column">
+              <h3 class="footer-title">Navigation</h3>
+              <ul class="footer-links">
+                <li><a href="{{ url_for('index') }}">Home</a></li>
+                <li><a href="{{ url_for('cropanalysis') }}">Crop Analysis</a></li>
+                <li><a href="{{ url_for('weather') }}">Weather</a></li>
+                <li><a href="{{ url_for('mapping') }}">Mapping</a></li>
+                <li><a href="{{ url_for('about') }}">About Us</a></li>
+              </ul>
+            </div>
+            <div class="footer-column">
+              <h3 class="footer-title">Services</h3>
+              <ul class="footer-links">
+                <li><a href="{{ url_for('cropanalysis') }}">AI Analysis</a></li>
+                <li><a href="{{ url_for('weather') }}">Weather Data</a></li>
+                <li><a href="{{ url_for('mapping') }}">Field Mapping</a></li>
+                <li><a href="{{ url_for('cropanalysis') }}">Soil Health</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>&copy; 2025 KrushiBher. All rights reserved.</p>
+          <div class="footer-bottom-links">
+            <a href="#">Privacy</a>
+            <a href="#">Terms</a>
+            <a href="#">Contact</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

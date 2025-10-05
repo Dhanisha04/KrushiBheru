@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>KrushiBheru Registration</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: 'Montserrat', Arial, sans-serif;
+      background: linear-gradient(120deg,#051F20 0%,#0B2B26 12%,#163832 28%,#235347 47%,#8EB69B 80%,#DAF1DE 100%);
+      animation: movingBg 20s ease-in-out infinite alternate;
+      scroll-behavior: smooth; /* Smooth scrolling for everything */
+      -webkit-overflow-scrolling: touch;
+    }
+    body {
+      min-height: 100vh;
+      height: auto;
+      overflow: auto;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      position: relative;
+      scroll-behavior: smooth; /* Extra insurance for body */
+      -webkit-overflow-scrolling: touch;
+    }
+    @keyframes movingBg {
+      0% {background-position:0% 60%;}
+      100% {background-position:100% 45%;}
+    }
+    .svg-bg, .sun-gradient, .particle, .plant {
+      position: fixed !important;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .sun-gradient {
+      top: -160px; left: 72vw; width:320px; height:320px;
+      background:radial-gradient(circle, #DAF1DE 41%, #8EB69B3d 81%,transparent 96%);
+      opacity:.33;filter:blur(2.8px);z-index:1;
+      animation:sunglare 14s infinite alternate;
+    }
+    @keyframes sunglare{ 0%{left:68vw;opacity:.13;}50%{left:80vw;opacity:.43;}100%{left:68vw;opacity:.13;} }
+    .particle {border-radius:50%; opacity:.13; pointer-events:none; z-index:2;}
+    .p1 {background:#8EB69B;width:23px;height:23px;left:16vw;top:83vh;animation:move1 18s infinite;}
+    .p2 {background:#163832;width:17px;height:17px;left:82vw;top:8vh;animation:move2 15s infinite;}
+    .p3 {background:#235347;width:19px;height:19px;left:66vw;top:97vh;animation:move3 21s infinite;}
+    .p4 {background:#DAF1DE;width:16px;height:16px;left:24vw;top:13vh;animation:move4 18s infinite;}
+    @keyframes move1 { 100% { transform:translateY(-92vh) scale(1.18); opacity:.24;} }
+    @keyframes move2 { 100% { transform:translateY(-97vh) scale(1.1); opacity:.14;} }
+    @keyframes move3 { 100% { transform:translateY(-104vh) scale(1.32); opacity:.13;} }
+    @keyframes move4 { 100% { transform:translateY(-82vh) scale(1.21); opacity:.22;} }
+    .plant {
+      bottom:0;left:13vw;width:136px;height:158px;opacity:.17;
+      pointer-events:none;z-index:3;animation:plantwave 14.5s alternate infinite;
+    }
+    @keyframes plantwave{0%{transform:translateY(0);}100%{transform:translateY(-19px);}}
+    .container {
+      max-width: 500px;
+      width: 100%;
+      background: rgba(13,31,32,0.95);
+      border-radius: 37px;
+      box-shadow: 0 13px 59px #163832ba,0 0 0 11px #0B2B2613;
+      padding: 36px 4vw 16px 4vw;
+      color: #DAF1DE;
+      position: relative;
+      z-index: 10;
+      margin: 42px auto;
+      backdrop-filter: blur(14px) saturate(1.14);
+      animation: fadeIn 1.3s cubic-bezier(.48,.86,.51,.98);
+      box-sizing: border-box;
+    }
+    @keyframes fadeIn {0%{opacity:0;transform:scale(.98);}100%{opacity:1;transform:scale(1);}}
+    .container:before {
+      content:'';
+      position:absolute;
+      top:-60px; left:5vw; width:170px; height:90px;
+      background:linear-gradient(127deg,#DAF1DE29 44%,#8EB69B21 80%,transparent);
+      border-radius: 90px 93px 90px 100px/104px 85px 99px 90px;
+      opacity:.37; filter: blur(2.2px);
+      z-index:2; pointer-events:none; animation:shineglass 10s infinite alternate;
+    }
+    @keyframes shineglass{0%{left:2vw;opacity:.22;}100%{left:30vw;opacity:.55;}}
+    h2 {
+      text-align: center;
+      margin-bottom: 27px;
+      font-weight: 900;
+      font-size: 2.1rem;
+      color: #8EB69B;
+      letter-spacing: 1.05px;
+      text-shadow: 0 2px 21px #23534780,0 0 14px #DAF1DE17;
+      animation: titlefade 1.17s;
+    }
+    @keyframes titlefade {0%{letter-spacing:3px;opacity:0;}75%{opacity:1;}100%{letter-spacing:1.15px;}}
+    form { display: flex; flex-direction: column; gap: 18px; }
+    label { font-size: 1.13rem; color: #DAF1DE; font-weight: 700; text-shadow: 0 0 12px #8EB69B39; }
+    input, select {
+      padding: 13px 17px;
+      border-radius: 15px;
+      border: 1.7px solid #8EB69B;
+      background: rgba(35,83,71,.62);
+      color: #DAF1DE;
+      font-size: 1.13rem;
+      transition: box-shadow .22s,border-color .18s,background .16s;
+      box-shadow: 0 2px 15px #23534723,0 0 0 2px #8EB69B0f inset;
+      outline:none;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    input:focus,select:focus {
+      box-shadow: 0 0 21px 0 #DAF1DEbb,0 2px 28px #16383225;
+      border-color: #DAF1DE;
+      background: rgba(35,83,71,0.98);
+    }
+    .btn {
+      padding: 15px;
+      background: linear-gradient(90deg,#8EB69B 45%,#DAF1DE 80%);
+      border: none;
+      border-radius: 16px;
+      color: #051F20;
+      font-size: 1.16rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 2px 14px #0B2B265b;
+      transition: background .24s,box-shadow .17s,color .18s;
+      margin-top: 5px;
+      position: relative;
+      width: 100%;
+    }
+    .btn::after {
+      content:""; position:absolute; left:0; top:0; width:100%; height:100%;
+      border-radius:15px; background:linear-gradient(81deg,transparent 60%,#8EB69B55 100%);
+      opacity:.19; pointer-events:none; animation:btnshine 3.1s infinite alternate;
+    }
+    @keyframes btnshine{0%{opacity:.16;}100%{opacity:.35;}}
+    .btn:hover {
+      background: linear-gradient(90deg,#DAF1DE 80%,#8EB69B 100%);
+      color: #235347;
+      box-shadow: 0 8px 42px #8EB69Bcc;
+    }
+    .form-footer {
+      text-align: center;
+      margin-top: 18px;
+      color: #8EB69B;
+      font-size: 1.07rem;
+      font-weight: 500;
+    }
+    .form-footer a {color:#DAF1DE;text-decoration:none;font-weight:700;transition:color .14s;}
+    .form-footer a:hover{text-decoration:underline;color:#235347;}
+    @media (max-width: 700px) {
+      body {
+        align-items: flex-start;
+      }
+      .container {
+        min-width: 0;
+        max-width: 99vw;
+        margin: 18px auto;
+        padding: 18px 2vw 12px 2vw;
+        border-radius: 18px;
+        box-shadow: 0 7px 27px #163832bb,0 0 0 4px #0B2B2613;
+      }
+      h2 { font-size: 1.14rem; }
+      input, select { font-size: 1.03rem; padding: 10px 11px;}
+      .btn { font-size: 1.09rem; padding: 11px;}
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;900&display=swap" rel="stylesheet">
+</head>
+<body>
+  <svg class="svg-bg" viewBox="0 0 100 100" preserveAspectRatio="none">
+    <ellipse cx="82" cy="97" rx="38" ry="12" fill="#8EB69B" opacity="0.2"/>
+    <ellipse cx="6" cy="98" rx="27" ry="7" fill="#DAF1DE" opacity="0.13"/>
+    <ellipse cx="50" cy="9" rx="49" ry="15" fill="#0B2B26" opacity="0.18"/>
+    <ellipse cx="14" cy="23" rx="26" ry="20" fill="#8EB69B" opacity="0.10"/>
+  </svg>
+  <div class="sun-gradient"></div>
+  <div class="particle p1"></div>
+  <div class="particle p2"></div>
+  <div class="particle p3"></div>
+  <div class="particle p4"></div>
+  <svg class="plant" viewBox="0 0 60 100">
+    <path d="M30,100 Q36,62 30,22 Q26,10 34,7 Q38,17 29,22Q33,14 44,35 Q44,41 37,30 Q44,43 48,28 Q47,62 41,41"
+      fill="none" stroke="#235347" stroke-width="4"/>
+    <ellipse cx="29" cy="16" rx="7" ry="10" fill="#8EB69B" opacity="0.18"/>
+    <ellipse cx="42" cy="32" rx="6" ry="9" fill="#DAF1DE" opacity="0.11"/>
+    <ellipse cx="32" cy="9" rx="8" ry="9" fill="#235347" opacity="0.09"/>
+  </svg>
+  <div class="container">
+    <h2>Farmer Registration</h2>
+    <form id="registrationForm" autocomplete="off">
+      <label for="name">Full Name</label>
+      <input type="text" id="name" name="name" required />
+      <label for="contact">Contact Number</label>
+      <input type="tel" id="contact" name="contact" pattern="[0-9]{10}" placeholder="10 digit number" required />
+      <label for="email">Email Address</label>
+      <input type="email" id="email" name="email" required />
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" minlength="6" required />
+      <label for="state">State</label>
+      <select id="state" name="state" required>
+        <option value="">-- Select State --</option>
+        <option>Punjab</option>
+        <option>Haryana</option>
+        <option>Uttar Pradesh</option>
+        <option>Gujarat</option>
+      </select>
+      <label for="district">District</label>
+      <input type="text" id="district" name="district" required />
+      <button type="submit" class="btn">Register</button>
+      <div class="form-footer">
+        Already a member? <a href="./login.html">Sign in here</a>
+      </div>
+    </form>
+  </div>
+  <script>
+    // Make container scroll into view if on mobile and focused, with smooth effect
+    document.querySelectorAll('input,select').forEach(function(ele){
+      ele.addEventListener('focus', function(){
+        ele.scrollIntoView({behavior:"smooth", block:"center"});
+      });
+    });
+    
+  document.getElementById('registrationForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    alert('Registration Successful!');
+    window.location.href = "login.html"; // Redirect to login page
+  });
+
+
+  </script>
+    
+</body>
+</html>
