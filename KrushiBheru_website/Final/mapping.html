@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <!--access control -->
+   <!-- <script>
+    if (localStorage.getItem('loggedIn') !== 'true') {
+      alert('Please login to access this page.');
+      window.location.href = 'login.html';
+    }
+  </script> -->
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KrushiBheru - Farm Boundary Mapper</title>
+  <link rel="stylesheet" href="styles-space.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background-color: #ffffff;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0;
+    }
+
+    /* Header Styles - Glass Effect */
+    .header {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 70px;
+    }
+
+    .logo {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+    margin-left: -60px;
+    margin-right:90px;
+    }
+
+    .logo-image {
+      width: 32px;
+      height: 32px;
+    }
+
+    .logo-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+
+    .logo-text {
+      font-size: 24px;
+      font-weight: 700;
+      color: #000000;
+    }
+
+    nav.navigation {
+    display: flex;
+    gap: 30px;
+    user-select: none;
+    font-size: 14px;
+}
+
+.navigation {
+  display: flex;
+  gap: 25px;
+  background: transparent;
+  align-items: center;
+}
+    .nav-link {
+      text-decoration: none;
+      color: #151515;
+      font-weight: 500;
+      transition: color 0.3s ease;
+      position: relative;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+      color: #4CAF50;
+    }
+
+    .nav-link.active::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: #4CAF50;
+      border-radius: 1px;
+    }
+
+    .header-actions {
+    display: flex
+;
+    align-items: center;
+    gap: 13px;
+    font-size: 14px;
+    margin-left: 33px;
+    }
+    .login-link {
+      text-decoration: none;
+      color: #151515;
+      font-weight: 500;
+      transition: color 0.3s ease;
+    }
+
+    .login-link:hover {
+      color: #4CAF50;
+    }
+
+    .signup-btn {
+      background: linear-gradient(135deg, #4CAF50, #45a049);
+      color: #151515;
+      padding: 10px 20px;
+      border-radius: 25px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .signup-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+    }
+
+    /* Original mapping styles with glass effect enhancements */
+    :root {
+      --primary-green: #4caf50;
+      --primary-green-light: #4caf50;
+      --primary-green-dark: #45a049;
+      --secondary-blue: #1976d2;
+      --secondary-blue-light: #42a5f5;
+      --accent-orange: #ff8f00;
+      --accent-red: #d32f2f;
+      --success-green: #388e3c;
+      --warning-orange: #f57c00;
+      --error-red: #d32f2f;
+
+      --white: #ffffff;
+      --gray-50: #fafafa;
+      --gray-100: #f5f5f5;
+      --gray-200: #eeeeee;
+      --gray-300: #e0e0e0;
+      --gray-400: #bdbdbd;
+      --gray-500: #9e9e9e;
+      --gray-600: #757575;
+      --gray-700: #616161;
+      --gray-800: #424242;
+      --gray-900: #212121;
+
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+      --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+      --radius-sm: 6px;
+      --radius: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+
+      --space-xs: 0.25rem;
+      --space-sm: 0.5rem;
+      --space: 1rem;
+      --space-lg: 1.5rem;
+      --space-xl: 2rem;
+      --space-2xl: 3rem;
+
+      --font-size-xs: 0.75rem;
+      --font-size-sm: 0.875rem;
+      --font-size-base: 1rem;
+      --font-size-lg: 1.125rem;
+      --font-size-xl: 1.25rem;
+      --font-size-2xl: 1.5rem;
+      --font-size-4xl: 2.25rem;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--gray-50);
+      color: var(--gray-900);
+      line-height: 1.6;
+      min-height: 100vh;
+      padding-top: 80px;
+      padding-left: var(--space-lg);
+      padding-right: var(--space-lg);
+    }
+
+    .location-btn {
+      background: linear-gradient(135deg, #4caf50, #45a049);
+      color: #151515;
+      padding: 10px 20px;
+      border-radius: 25px;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      border: none;
+    }
+
+    .location-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+    }
+
+    /* Map container */
+    #map {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 0;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+      background: var(--gray-100);
+    }
+
+    .leaflet-top.leaflet-left {
+  top: 80px !important; /* push controls down below navbar (navbar height is 70px + some margin) */
+}
+
+
+    /* Floating instructions panel moved to bottom */
+    .instructions-panel {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      max-width: 600px;
+      width: 95%;
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: var(--radius-xl);
+      padding: var(--space-lg);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      z-index: 900;
+      transition: all 0.3s ease;
+      font-size: var(--font-size-sm);
+      color: var(--gray-800);
+      user-select: none;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+    }
+
+    .instructions-panel h3 {
+      flex-basis: 100%;
+      margin-bottom: var(--space-lg);
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: var(--primary-green);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 15px;
+      margin-bottom: var(--space-sm);
+      padding: var(--space-sm);
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: var(--radius-md);
+      transition: background-color 0.3s ease;
+      cursor: default;
+      flex: 1 1 45%;
+      max-width: 300px;
+    }
+
+    .step:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateX(5px);
+    }
+
+    .step-number {
+      background: var(--primary-green);
+      color: var(--white);
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+      flex-shrink: 0;
+      user-select: none;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .step-text {
+      color: var(--gray-700);
+      font-size: var(--font-size-sm);
+      line-height: 1.4;
+      user-select: text;
+    }
+
+    /* Farm sidebar */
+    .farm-sidebar {
+      position: fixed;
+      top: 100px;
+      right: var(--space-xl);
+      width: 350px;
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: var(--radius-xl);
+      padding: var(--space-xl);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      z-index: 900;
+      max-height: calc(100vh - 140px);
+      overflow-y: auto;
+      user-select: none;
+      color: var(--gray-900);
+      display: none;
+    }
+
+    .farm-sidebar h3 {
+      margin-bottom: var(--space-lg);
+      font-weight: 700;
+      font-size: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--primary-green);
+    }
+
+    .farm-info-item {
+      display: flex;
+      justify-content: space-between;
+      padding: var(--space-sm) 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      align-items: center;
+      font-size: var(--font-size-base);
+      color: var(--gray-800);
+    }
+
+    .farm-info-item:last-child {
+      border-bottom: none;
+    }
+
+    .info-label {
+      font-weight: 600;
+      color: var(--gray-700);
+      user-select: text;
+    }
+
+    .info-value {
+      font-weight: 700;
+      color: var(--gray-900);
+      user-select: text;
+    }
+
+    .coordinates-section {
+      margin-top: var(--space-lg);
+      padding-top: var(--space-lg);
+      border-top: 2px solid var(--primary-green-light);
+    }
+
+    .coordinates-section h4 {
+      font-weight: 700;
+      font-size: var(--font-size-lg);
+      color: var(--primary-green);
+      margin-bottom: var(--space-md);
+    }
+
+    .coordinate-point {
+      background: rgba(255, 255, 255, 0.2);
+      padding: var(--space-sm) var(--space-md);
+      margin: 5px 0;
+      border-radius: var(--radius-md);
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      color: var(--gray-800);
+      user-select: text;
+    }
+
+    .action-buttons {
+      margin-top: var(--space-lg);
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .action-btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: var(--radius-xl);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: var(--font-size-sm);
+      flex: 1;
+      user-select: none;
+      box-shadow: var(--shadow-md);
+      color: white;
+    }
+
+    .save-btn {
+      background: var(--primary-green);
+    }
+
+    .clear-btn {
+      background: var(--accent-red);
+    }
+
+    .export-btn {
+      background: #2196F3;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    /* Location status */
+    .location-status {
+      position: fixed;
+      bottom: var(--space-xl);
+      left: var(--space-xl);
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: var(--space) var(--space-lg);
+      border-radius: var(--radius-xl);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      z-index: 900;
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      font-size: var(--font-size-sm);
+      color: var(--gray-900);
+      user-select: none;
+    }
+    
+    .location-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent-red);
+      animation: pulse 2s infinite;
+    }
+    
+    .location-indicator.active {
+      background: var(--primary-green);
+    }
+    
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+    
+    /* Success message */
+    .success-message {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--primary-green);
+      color: var(--white);
+      padding: var(--space-lg) var(--space-xl);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-xl);
+      backdrop-filter: blur(20px);
+      z-index: 1001;
+      display: none;
+      text-align: center;
+      font-weight: 600;
+      font-size: var(--font-size-lg);
+      user-select: none;
+    }
+
+    /* Responsive layout adjustments */
+    @media (max-width: 768px) {
+      .header-content {
+        flex-direction: column;
+        height: auto;
+        padding: 15px 20px;
+        gap: 15px;
+      }
+      .navigation {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 15px;
+      }
+      .instructions-panel {
+        bottom: 120px !important;
+        left: var(--space-lg);
+        right: var(--space-lg);
+        max-width: none;
+        width: auto;
+        flex-wrap: nowrap;
+        flex-direction: column;
+      }
+      .farm-sidebar {
+        top: auto;
+        bottom: 80px;
+        max-height: 300px;
+        width: calc(100% - 40px);
+        right: var(--space-lg);
+      }
+      .location-status {
+        left: var(--space-lg);
+        bottom: var(--space-lg);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .navigation {
+        display: none;
+      }
+    }
+
+    /* Focus styles for accessibility */
+    .nav-link:focus,
+    .location-btn:focus,
+    .signup-btn:focus {
+      outline: 2px solid #4CAF50;
+      outline-offset: 2px;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+  </style>
+  <link rel="stylesheet" href="styles-global.css" />
+</head>
+<body class="space-theme">
+<header class="header space-header">
+    <div class="header-content">
+      <div class="logo">
+        <div class="logo-image">
+          <img src="image/logo.png" alt="KrushiBheru Logo" />
+        </div>
+        <span class="logo-text">KrushiBheru</span>
+      </div>
+      <nav class="navigation">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="cropanalysis.html" class="nav-link">Crop Analysis</a>
+        <a href="framdetails.html" class="nav-link">Field Analysis</a>
+        <a href="field_dashboard.html" class="nav-link">Field Dashboard</a>
+        <a href="mapping.html" class="nav-link active">Mapping</a>
+        <a href="weather.html" class="nav-link">Weather</a>
+        <a href="report.html" class="nav-link">Report</a>
+        <a href="about.html" class="nav-link">About Us</a>
+      </nav>
+      <div class="header-actions">
+        <button id="getLocationBtn" class="location-btn">📍 Get My Location</button>
+      </div>
+    </div>
+  </header>
+
+  <div id="map"></div>
+
+  <div class="instructions-panel space-card space-scan-line reveal">
+    <h3 class="space-heading">🌾 How to Map Your Farm</h3>
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-text">Click "Get My Location" to find your current position</div>
+    </div>
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-text">Use the polygon tool (⬟) to draw your farm boundary</div>
+    </div>
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-text">Click on each corner of your farm to create the boundary</div>
+    </div>
+    <div class="step">
+      <div class="step-number">4</div>
+      <div class="step-text">View your farm details and save the coordinates</div>
+    </div>
+  </div>
+
+  <div class="farm-sidebar" id="farmSidebar">
+    <h3>🏠 Your Farm Details</h3>
+    <div id="farmInfo">
+      <div class="farm-info-item">
+        <span class="info-label">Area:</span>
+        <span class="info-value" id="farmArea">0 hectares</span>
+      </div>
+      <div class="farm-info-item">
+        <span class="info-label">Perimeter:</span>
+        <span class="info-value" id="farmPerimeter">0 km</span>
+      </div>
+      <div class="farm-info-item">
+        <span class="info-label">Corners:</span>
+        <span class="info-value" id="farmCorners">0 points</span>
+      </div>
+      <div class="farm-info-item">
+        <span class="info-label">Created:</span>
+        <span class="info-value" id="farmDate">Just now</span>
+      </div>
+    </div>
+    <div class="coordinates-section">
+      <h4>📍 Boundary Coordinates</h4>
+      <div id="coordinatesList"></div>
+    </div>
+    <div class="action-buttons">
+      <button class="action-btn save-btn" onclick="saveFarm()">💾 Save Farm</button>
+      <button class="action-btn clear-btn" onclick="clearFarm()">🗑️ Clear</button>
+      <button class="action-btn export-btn" onclick="exportCoordinates()">📤 Export JSON</button>
+    </div>
+  </div>
+
+  <div class="location-status" id="locationStatus">
+    <div class="location-indicator" id="locationIndicator"></div>
+    <span id="locationText">Click "Get My Location" to start</span>
+  </div>
+
+  <div class="success-message" id="successMessage">
+    ✅ Farm boundary saved successfully!
+  </div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+  <script>
+    // Map and UI functionality (retained unchanged)
+    let map = L.map('map').setView([20.5937, 78.9629], 6);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'ESRI World Imagery',
+      maxZoom: 20,
+    }).addTo(map);
+
+    const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19,
+    });
+
+    const baseLayers = {
+      "Satellite": L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'),
+      "Street Map": osmLayer
+    };
+    L.control.layers(baseLayers).addTo(map);
+
+    const drawnItems = new L.FeatureGroup();
+    map.addLayer(drawnItems);
+
+    const drawControl = new L.Control.Draw({
+      edit: {
+        featureGroup: drawnItems,
+        remove: true
+      },
+      draw: {
+        polygon: {
+          allowIntersection: false,
+          showArea: true,
+          drawError: {
+            color: '#e1e100',
+            message: '<strong>Oh snap!</strong> you can\'t draw that!'
+          }
+        },
+        rectangle: {
+          showArea: true
+        },
+        polyline: false,
+        circle: false,
+        marker: false,
+        circlemarker: false
+      }
+    });
+    map.addControl(drawControl);
+
+    let currentFarm = null;
+    let userLocation = null;
+
+    document.getElementById('getLocationBtn').addEventListener('click', function() {
+      const locationBtn = this;
+      const locationStatus = document.getElementById('locationStatus');
+      const locationIndicator = document.getElementById('locationIndicator');
+      const locationText = document.getElementById('locationText');
+
+      locationBtn.disabled = true;
+      locationBtn.innerHTML = '🔄 Getting Location...';
+      locationText.innerHTML = 'Detecting your GPS location...';
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          function(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            const accuracy = position.coords.accuracy;
+
+            userLocation = { lat, lng, accuracy };
+
+            map.setView([lat, lng],16);
+
+            L.marker([lat, lng], {
+              icon: L.divIcon({
+                html: '📍',
+                className: 'custom-div-icon',
+                iconSize: [20, 20]
+              })
+            }).addTo(map).bindPopup('📍 Your Location').openPopup();
+
+            L.circle([lat,lng], {
+              radius: accuracy,
+              color: '#4caf50',
+              fillColor: '#4caf50',
+              fillOpacity: 0.1,
+              weight: 2
+            }).addTo(map);
+
+            locationIndicator.classList.add('active');
+            locationText.innerHTML = `Location found (±${Math.round(accuracy)}m accuracy)`;
+            locationBtn.innerHTML = '✅ Location Found';
+            locationBtn.disabled = false;
+          },
+          function(error) {
+            console.error('Location error:', error);
+            locationText.innerHTML = 'Location access denied or failed';
+            locationBtn.innerHTML = '❌ Location Failed';
+            locationBtn.disabled = false;
+
+            fetch('http://ip-api.com/json/')
+              .then(response => response.json())
+              .then(data => {
+                if (data.status === 'success') {
+                  map.setView([data.lat, data.lon], 12);
+                  locationText.innerHTML = `Approximate location: ${data.city}, ${data.country}`;
+                }
+              })
+              .catch(() => {
+                locationText.innerHTML = 'Using default map view';
+              });
+            },
+          {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 60000
+          }
+        );
+      } else {
+        locationText.innerHTML = 'Geolocation not supported';
+        locationBtn.innerHTML = '❌ Not Supported';
+        locationBtn.disabled = false;
+      }
+    });
+
+    map.on(L.Draw.Event.CREATED, function(event) {
+      const layer = event.layer;
+
+      drawnItems.clearLayers();
+      drawnItems.addLayer(layer);
+
+      currentFarm = layer;
+      updateFarmInfo(layer);
+
+      document.getElementById('farmSidebar').style.display = 'block';
+    });
+
+    map.on(L.Draw.Event.EDITED, function(event) {
+      const layers = event.layers;
+      layers.eachLayer(function(layer) {
+        currentFarm = layer;
+        updateFarmInfo(layer);
+      });
+    });
+
+    map.on(L.Draw.Event.DELETED, function() {
+      currentFarm = null;
+      document.getElementById('farmSidebar').style.display = 'none';
+    });
+
+    function updateFarmInfo(layer) {
+      const geojson = layer.toGeoJSON();
+      const area = turf.area(geojson);
+      const hectares = (area / 10000).toFixed(2);
+      const acres = (hectares * 2.471).toFixed(2);
+
+      const coordinates = geojson.geometry.coordinates[0];
+      let perimeter = 0;
+      for (let i = 0; i < coordinates.length - 1; i++) {
+        const from = turf.point(coordinates[i]);
+        const to = turf.point(coordinates[i + 1]);
+        perimeter += turf.distance(from, to, { units: 'kilometers' });
+      }
+
+      document.getElementById('farmArea').innerHTML = `${hectares} hectares (${acres} acres)`;
+      document.getElementById('farmPerimeter').innerHTML = `${perimeter.toFixed(2)} km`;
+      document.getElementById('farmCorners').innerHTML = `${coordinates.length - 1} points`;
+      document.getElementById('farmDate').innerHTML = new Date().toLocaleString();
+
+      const coordinatesList = document.getElementById('coordinatesList');
+      coordinatesList.innerHTML = '';
+      coordinates.slice(0, -1).forEach((coord, index) => {
+        const div = document.createElement('div');
+        div.className = 'coordinate-point';
+        div.textContent = `Corner ${index + 1}: ${coord[1].toFixed(6)}, ${coord[0].toFixed(6)}`;
+        coordinatesList.appendChild(div);
+      });
+    }
+
+    function saveFarm() {
+      if (!currentFarm) {
+        alert('No farm boundary to save!');
+        return;
+      }
+      const farmData = {
+        name: `Farm_${Date.now()}`,
+        coordinates: currentFarm.toGeoJSON().geometry.coordinates[0],
+        area_hectares: parseFloat(document.getElementById('farmArea').textContent),
+        perimeter_km: parseFloat(document.getElementById('farmPerimeter').textContent),
+        corners: parseInt(document.getElementById('farmCorners').textContent),
+        created_at: new Date().toISOString(),
+        user_location: userLocation
+      };
+      const savedFarms = JSON.parse(localStorage.getItem('savedFarms') || '[]');
+      savedFarms.push(farmData);
+      localStorage.setItem('savedFarms', JSON.stringify(savedFarms));
+      const successMessage = document.getElementById('successMessage');
+      successMessage.style.display = 'block';
+      setTimeout(() => { successMessage.style.display = 'none'; }, 3000);
+      console.log('Farm saved:', farmData);
+    }
+
+    function clearFarm() {
+      if (confirm('Are you sure you want to clear the current farm boundary?')) {
+        drawnItems.clearLayers();
+        currentFarm = null;
+        document.getElementById('farmSidebar').style.display = 'none';
+      }
+    }
+
+    function exportCoordinates() {
+      if (!currentFarm) {
+        alert('No farm boundary to export!');
+        return;
+      }
+      const farmData = {
+        farm_boundary: {
+          coordinates: currentFarm.toGeoJSON().geometry.coordinates[0],
+          area_hectares: parseFloat(document.getElementById('farmArea').textContent),
+          perimeter_km: parseFloat(document.getElementById('farmPerimeter').textContent),
+          corners: parseInt(document.getElementById('farmCorners').textContent),
+          created_at: new Date().toISOString()
+        },
+        user_location: userLocation,
+        geojson: currentFarm.toGeoJSON()
+      };
+      const dataStr = JSON.stringify(farmData, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `farm_boundary_${Date.now()}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    window.addEventListener('load', function() {
+      setTimeout(() => { document.getElementById('getLocationBtn').click(); }, 1000);
+    });
+  </script>
+
+
+</body>
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KrushiBheru Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <style>
+    /* ====== GLOBAL RESET ====== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+    }
+
+    body {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: url('https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=1920&q=80')
+                  no-repeat center center/cover;
+      overflow: hidden;
+      position: relative;
+      animation: bgPan 40s infinite alternate ease-in-out;
+    }
+
+    /* ====== OVERLAY & PARTICLES ====== */
+    body::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(5,31,32,0.9), rgba(11,43,38,0.7), rgba(22,56,50,0.6));
+      z-index: 0;
+      mix-blend-mode: overlay;
+    }
+
+    @keyframes bgPan {
+      0% { background-position: center; transform: scale(1); }
+      100% { background-position: top right; transform: scale(1.1); }
+    }
+
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: rgba(218, 241, 222, 0.8);
+      border-radius: 50%;
+      animation: floatUp 12s linear infinite;
+    }
+
+    @keyframes floatUp {
+      from { transform: translateY(100vh) scale(0.8); opacity: 0.4; }
+      to { transform: translateY(-10vh) scale(1.2); opacity: 0; }
+    }
+
+    /* ====== LOGIN BOX ====== */
+    .login-box {
+      position: relative;
+      z-index: 2;
+      width: 400px;
+      padding: 50px 40px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(18px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 0 45px rgba(142,182,155,0.4);
+      text-align: center;
+      color: #DAF1DE;
+      animation: fadeIn 2s ease-out, floatPulse 6s infinite ease-in-out;
+      transition: all 0.3s ease;
+    }
+
+    .login-box:hover {
+      transform: scale(1.02);
+      box-shadow: 0 0 60px rgba(218, 241, 222, 0.6);
+    }
+
+    .login-box h2 {
+      margin-bottom: 25px;
+      font-size: 28px;
+      font-weight: 600;
+      color: #DAF1DE;
+      text-shadow: 0 0 15px rgba(142,182,155,0.8);
+      animation: textGlow 3s infinite alternate;
+    }
+
+    label {
+      display: block;
+      text-align: left;
+      color: #8EB69B;
+      margin-bottom: 6px;
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px 14px;
+      margin-bottom: 18px;
+      border: none;
+      border-radius: 10px;
+      outline: none;
+      background: rgba(255, 255, 255, 0.18);
+      color: #DAF1DE;
+      font-size: 15px;
+      transition: 0.3s ease;
+    }
+
+    input::placeholder {
+      color: #8EB69B;
+    }
+
+    input:focus {
+      background: rgba(255, 255, 255, 0.3);
+      box-shadow: 0 0 15px #8EB69B;
+      transform: scale(1.03);
+    }
+
+    /* ====== BUTTONS ====== */
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #8EB69B, #DAF1DE);
+      color: #051F20;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s ease;
+      box-shadow: 0 0 15px rgba(218,241,222,0.4);
+    }
+
+    button:hover {
+      background: linear-gradient(135deg, #DAF1DE, #8EB69B);
+      box-shadow: 0 0 30px #DAF1DE;
+      transform: translateY(-2px) scale(1.05);
+      letter-spacing: 0.5px;
+    }
+
+    /* ====== CREATE ACCOUNT BUTTON ====== */
+    .create-account {
+      margin-top: 25px;
+      display: inline-block;
+      font-size: 15px;
+      color: #8EB69B;
+      text-decoration: none;
+      border: 1px solid rgba(142,182,155,0.5);
+      border-radius: 8px;
+      padding: 10px 25px;
+      transition: 0.4s ease;
+      animation: pulseGlow 4s infinite ease-in-out;
+    }
+
+    .create-account:hover {
+      background: rgba(218,241,222,0.2);
+      color: #DAF1DE;
+      box-shadow: 0 0 15px #DAF1DE;
+      transform: scale(1.08);
+    }
+
+    /* ====== ANIMATIONS ====== */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(50px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes floatPulse {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @keyframes textGlow {
+      from { text-shadow: 0 0 10px #8EB69B; }
+      to { text-shadow: 0 0 30px #DAF1DE, 0 0 60px #8EB69B; }
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 10px rgba(218,241,222,0.1); }
+      50% { box-shadow: 0 0 20px rgba(218,241,222,0.4); }
+    }
+
+    /* ====== RESPONSIVE ====== */
+    @media (max-width: 480px) {
+      .login-box {
+        width: 90%;
+        padding: 35px 25px;
+      }
+
+      .login-box h2 {
+        font-size: 22px;
+      }
+
+      button {
+        font-size: 15px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Floating background particles -->
+  <script>
+    for (let i = 0; i < 25; i++) {
+      const particle = document.createElement('div');
+      particle.classList.add('particle');
+      particle.style.left = `${Math.random() * 100}%`;
+      particle.style.animationDuration = `${8 + Math.random() * 10}s`;
+      particle.style.animationDelay = `${Math.random() * 5}s`;
+      document.body.appendChild(particle);
+    }
+  </script>
+
+  <div class="login-box">
+    <h2>Farmer Login</h2>
+    <form id="loginForm">
+      <label for="loginUser">Username</label>
+      <input type="text" id="loginUser" placeholder="Email or Phone" required>
+
+      <label for="loginPassword">Password</label>
+      <input type="password" id="loginPassword" placeholder="Password" required>
+
+      <button type="submit">Log In</button>
+    </form>
+
+    <!-- Create Account Link -->
+    <a href="form.html" class="create-account">Not a member? Create Account</a>
+  </div>
+
+  <script>
+  document.getElementById("loginForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    alert("🌾 Welcome back, Farmer! 🌿");
+    window.location.href = "index.html"; // Redirect to index page
+  });
+  </script>
+    
+</body>
+</html>

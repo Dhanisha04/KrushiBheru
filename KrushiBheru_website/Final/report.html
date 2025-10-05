@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Farmer Report - Agri Monitor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --text-color: #222222;
+      --text-highlight-color: #4CAF50;
+      --shadow-color: rgba(0, 0, 0, 0.15);
+      --glow-color: rgba(76, 175, 80, 0.5);
+      --font-serif: 'Playfair Display', serif;
+      --font-sans: 'Inter', sans-serif;
+      --green: #4CAF50;
+      --red: #E63946;
+      --radius-lg: 25px;
+      --radius-xl: 38px;
+      --background-gradient: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+    }
+
+    /* Reset and base */
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: var(--font-sans);
+      background: url('https://user-gen-media-assets.s3.amazonaws.com/seedream_images/39a14ebd-5498-426d-a12b-b71b6dd38563.png') no-repeat center center fixed;
+      background-size: cover;
+      min-height: 100vh;
+      color: var(--text-color);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Header Styles - matching about page exactly */
+.header {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 70px;
+}
+
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+    margin-left: -60px;
+    margin-right:90px;
+    }
+
+
+.logo-image {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.logo-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+
+.logo-text {
+  font-size: 24px;
+  font-weight: 700;
+  color: #000000;
+}
+
+
+nav.navigation {
+    display: flex;
+    gap: 30px;
+    user-select: none;
+    font-size: 14px;
+}
+
+.navigation {
+  display: flex;
+  gap: 25px;
+  background: transparent;
+  align-items: center;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: #151515;
+  font-weight: 500;
+  transition: color 0.3s ease;
+  position: relative;
+}
+
+
+.nav-link:hover,
+.nav-link.active {
+  color: #4CAF50;
+}
+
+
+.nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #4CAF50;
+  border-radius: 1px;
+}
+
+
+.header-actions {
+    display: flex
+;
+    align-items: center;
+    gap: 13px;
+    font-size: 14px;
+    margin-left: 33px;
+}
+
+.login-link {
+  color: #151515;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+
+.login-link:hover {
+  color: #4CAF50;
+}
+
+
+.signup-btn {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 25px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+
+.signup-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+    .dropbtn {
+      background: none;
+      border: none;
+      color: white;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 16px;
+      border-radius: 14px;
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+    .dropbtn:hover {
+      background: var(--green);
+      color: #111;
+      box-shadow: 0 0 12px var(--glow-color);
+    }
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background: white;
+      min-width: 150px;
+      box-shadow: 0 8px 24px rgba(76,175,80,0.3);
+      border-radius: 14px;
+      right: 0;
+      overflow: hidden;
+      user-select: none;
+    }
+    .dropdown-content a {
+      color: #222;
+      padding: 12px 18px;
+      display: block;
+      text-decoration: none;
+      font-weight: 600;
+      transition: background 0.25s ease;
+    }
+    .dropdown-content a:hover {
+      background: var(--green);
+      color: #111;
+      box-shadow: 0 0 12px var(--glow-color);
+    }
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+
+    main.main-content {
+      padding: 100px 20px 50px;
+      max-width: 800px;
+      margin: 0 auto 40px;
+      background: rgba(255 255 255 / 0.3);
+      border-radius: var(--radius-xl);
+      backdrop-filter: saturate(180%) blur(30px);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      color: #222;
+      text-shadow: 0 0 5px rgba(255 255 255 / 0.5);
+    }
+
+    .report-title {
+      text-align: center;
+      font-size: 2.8rem;
+      font-family: var(--font-serif);
+      font-weight: 700;
+      color: var(--green);
+      margin-bottom: 25px;
+      letter-spacing: 2px;
+      text-shadow: 0 0 18px var(--glow-color);
+    }
+
+    .report-container {
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+
+    .report-section h2 {
+      font-family: var(--font-serif);
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: var(--green);
+      margin-bottom: 8px;
+      position: relative;
+      padding-bottom: 6px;
+      box-shadow: inset 0 -3px 0 var(--glow-color);
+      text-shadow: 0 0 16px var(--glow-color);
+    }
+
+    .report-section p {
+      font-size: 1.1rem;
+      color: #444;
+      line-height: 1.8;
+      padding-left: 8px;
+      border-left: 4px solid var(--green);
+      user-select: text;
+      transition: color 0.4s ease;
+    }
+    .report-section p:hover {
+      color: var(--text-highlight-color);
+      text-shadow: 0 0 20px var(--glow-color);
+    }
+
+    .summary-table {
+      width: 100%;
+      border-collapse: collapse;
+      box-shadow: 0 0 8px rgba(76,175,80,0.2);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .summary-table thead {
+      background: var(--green);
+      color: white;
+    }
+    .summary-table th, .summary-table td {
+      padding: 12px 15px;
+      text-align: left;
+      font-weight: 600;
+    }
+    .summary-table tbody tr {
+      border-bottom: 1px solid #ddd;
+      background: rgba(255 255 255 / 0.85);
+      transition: background 0.3s ease;
+    }
+    .summary-table tbody tr:nth-child(even) {
+      background: rgba(255 255 255 / 0.6);
+    }
+    .summary-table tbody tr.alert {
+      background: #ffe1e6 !important;
+      color: var(--red);
+      font-weight: 700;
+      box-shadow: 0 0 6px var(--red);
+    }
+
+    .advice-list {
+      list-style-type: none;
+      padding-left: 1rem;
+      color: #444;
+      font-size: 1.1rem;
+    }
+    .advice-list li:not(.section-header) {
+      margin-bottom: 12px;
+      padding-left: 14px;
+      position: relative;
+      user-select: text;
+    }
+    .advice-list li.section-header {
+      font-weight: 700;
+      margin-top: 16px;
+      margin-bottom: 8px;
+      font-size: 1.3rem;
+    }
+    .advice-list li.critical {
+      color: var(--red);
+      text-shadow: 0 0 6px var(--red);
+    }
+    .advice-list li.warning {
+      color: #e67e22;
+      text-shadow: 0 0 6px #e67e22cc;
+    }
+    .advice-list li.info {
+      color: var(--green);
+      text-shadow: 0 0 8px var(--glow-color);
+    }
+
+    /* Chart canvas style */
+    #ndviChart {
+      width: 100%;
+      max-height: 350px;
+      margin-top: 20px;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 6px 22px rgba(76,175,80,0.25);
+      background: white;
+      padding: 20px;
+    }
+
+    /* Responsive */
+    @media screen and (max-width: 768px) {
+      main.main-content {
+        padding: 90px 20px 40px;
+        max-width: 100%;
+      }
+      .report-title {
+        font-size: 2.4rem;
+      }
+      .report-section h2 {
+        font-size: 1.6rem;
+      }
+      .summary-table th, .summary-table td {
+        padding: 10px 12px;
+        font-size: 14px;
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      .report-title {
+        font-size: 2rem;
+      }
+      .report-section h2 {
+        font-size: 1.4rem;
+      }
+      .summary-table th, .summary-table td {
+        padding: 8px 10px;
+        font-size: 13px;
+      }
+      .advice-list li:not(.section-header) {
+        font-size: 1rem;
+      }
+    }
+    /* Enhanced Attractive Footer */
+    .footer {
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+      color: #ffffff;
+      padding: 50px 0 25px;
+      margin-top: 0;
+      border-top: 4px solid transparent;
+      border-image: linear-gradient(90deg, #4CAF50, #45a049, #66BB6A, #4CAF50) 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Animated background pattern */
+    .footer::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: 
+        radial-gradient(circle at 20% 80%, rgba(76, 175, 80, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(76, 175, 80, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(76, 175, 80, 0.05) 0%, transparent 50%);
+      animation: backgroundShift 15s ease-in-out infinite;
+      z-index: 0;
+    }
+
+    @keyframes backgroundShift {
+      0%, 100% { opacity: 0.3; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.1); }
+    }
+
+    /* Glowing top border animation */
+    .footer::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #4CAF50, #45a049, #66BB6A, #4CAF50);
+      background-size: 200% 100%;
+      animation: borderGlow 3s ease-in-out infinite;
+      z-index: 1;
+    }
+
+    @keyframes borderGlow {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .footer-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 40px;
+      margin-bottom: 35px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .footer-brand {
+      flex: 1;
+      min-width: 280px;
+      animation: fadeInLeft 0.8s ease-out;
+    }
+
+    @keyframes fadeInLeft {
+      from { opacity: 0; transform: translateX(-30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .footer-logo .logo-image {
+      width: 32px;
+      height: 32px;
+    }
+
+    .footer-logo .logo-text {
+      font-size: 26px;
+      font-weight: 700;
+      color: #4CAF50;
+      text-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .footer-logo:hover .logo-text {
+      text-shadow: 0 0 20px rgba(76, 175, 80, 0.6);
+      transform: scale(1.05);
+    }
+
+    .footer-description {
+      color: #cccccc;
+      line-height: 1.6;
+      margin-bottom: 20px;
+      font-size: 14px;
+      max-width: 300px;
+    }
+
+    .footer-links-section {
+      display: flex;
+      gap: 60px;
+      flex-wrap: wrap;
+      animation: fadeInRight 0.8s ease-out 0.2s both;
+    }
+
+    @keyframes fadeInRight {
+      from { opacity: 0; transform: translateX(30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .footer-column {
+      min-width: 120px;
+    }
+
+    .footer-title {
+      color: #4CAF50;
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 18px;
+      position: relative;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .footer-title::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 30px;
+      height: 2px;
+      background: linear-gradient(90deg, #4CAF50, #66BB6A);
+      border-radius: 1px;
+      transition: width 0.3s ease;
+    }
+
+    .footer-column:hover .footer-title::after {
+      width: 50px;
+    }
+
+    .footer-links {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .footer-links li {
+      margin-bottom: 8px;
+    }
+
+    .footer-links a {
+      color: #cccccc;
+      text-decoration: none;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      position: relative;
+      display: inline-block;
+    }
+
+    .footer-links a::before {
+      content: '';
+      position: absolute;
+      left: -15px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 1px;
+      background: #4CAF50;
+      transition: width 0.3s ease;
+    }
+
+    .footer-links a:hover {
+      color: #4CAF50;
+      transform: translateX(8px);
+      text-shadow: 0 0 8px rgba(76, 175, 80, 0.4);
+    }
+
+    .footer-links a:hover::before {
+      width: 10px;
+    }
+
+    .footer-social {
+      display: flex;
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .social-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #333333, #404040);
+      border-radius: 10px;
+      color: #cccccc;
+      text-decoration: none;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .social-link::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(76, 175, 80, 0.3), transparent);
+      transition: left 0.6s ease;
+    }
+
+    .social-link:hover::before {
+      left: 100%;
+    }
+
+    .social-link:hover {
+      background: linear-gradient(135deg, #4CAF50, #66BB6A);
+      color: white;
+      transform: translateY(-4px) scale(1.1);
+      box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+    }
+
+    .footer-bottom {
+      border-top: 1px solid rgba(76, 175, 80, 0.2);
+      padding-top: 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      position: relative;
+      z-index: 2;
+      animation: fadeInUp 0.8s ease-out 0.4s both;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .footer-bottom p {
+      color: #999999;
+      font-size: 13px;
+      margin: 0;
+    }
+
+    .footer-bottom-links {
+      display: flex;
+      gap: 20px;
+    }
+
+    .footer-bottom-links a {
+      color: #999999;
+      text-decoration: none;
+      font-size: 13px;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .footer-bottom-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 1px;
+      background: #4CAF50;
+      transition: width 0.3s ease;
+    }
+
+    .footer-bottom-links a:hover {
+      color: #4CAF50;
+      text-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+    }
+
+    .footer-bottom-links a:hover::after {
+      width: 100%;
+    }
+
+    /* Responsive Footer */
+    @media (max-width: 768px) {
+      .footer {
+        padding: 30px 0 15px;
+        margin-top: 40px;
+      }
+      
+      .footer-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 25px;
+      }
+      
+      .footer-links-section {
+        justify-content: center;
+        gap: 30px;
+      }
+      
+      .footer-bottom {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+      }
+      
+      .footer-social {
+        justify-content: center;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="styles-global.css" />
+</head>
+<body>
+<header class="header">
+  <div class="header-content">
+    <div class="logo">
+      <div class="logo-image">
+        <img src="image/logo.png" alt="KrushiBheru Logo" />
+      </div>
+      <span class="logo-text">KrushiBheru</span>
+    </div>
+    <nav class="navigation">
+      <a href="index.html" class="nav-link">Home</a>
+      <a href="cropanalysis.html" class="nav-link">Crop Analysis</a>
+      <a href="framdetails.html" class="nav-link">Field Analysis</a>
+      <a href="field_dashboard.html" class="nav-link ">Field Dashboard</a>
+      <a href="mapping.html" class="nav-link">Mapping</a>
+      <a href="weather.html" class="nav-link">Weather</a>
+      <a href="report.html" class="nav-link active">Report</a>
+      <a href="about.html" class="nav-link">About Us</a>
+    </nav>
+    <div class="header-actions">
+      <a href="index.html" class="signup-btn">Logout</a>
+    </div>
+  </div>
+</header>
+
+
+<main class="main-content">
+  <h1 class="report-title">Farm Report - 2025-10-05</h1>
+  <div class="report-container">
+
+    <section class="report-section">
+      <h2>Crop Health</h2>
+      <p>The crop health status is Good. NDVI (health index): 0.82</p>
+      <p>The health trend is Stable with no significant changes detected in recent weeks.</p>
+    </section>
+
+    <section class="report-section">
+      <h2>Weather Today</h2>
+      <p>
+        Temperature: 28°C<br>
+        Rainfall: 2 mm<br>
+        Humidity: 65%<br>
+        Wind Speed: 3 m/s
+      </p>
+    </section>
+
+    <section class="report-section">
+      <h2>Soil Condition</h2>
+      <p>Soil moisture is within optimal range for current crop growth phase.</p>
+      <p>Soil moisture level: 55%</p>
+    </section>
+
+    <section class="report-section">
+      <h2>Field Summary</h2>
+      <table class="summary-table" aria-label="Field Summary Table">
+        <thead>
+          <tr>
+            <th>Field ID</th>
+            <th>Crop Type</th>
+            <th>Soil Moisture (%)</th>
+            <th>Temperature (°C)</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>Basmati Rice</td>
+            <td>55</td>
+            <td>28</td>
+            <td>Normal</td>
+          </tr>
+          <tr class="alert">
+            <td>2</td>
+            <td>Wheat</td>
+            <td>35</td>
+            <td>33</td>
+            <td>Low Moisture, Heat Stress Risk</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>Corn</td>
+            <td>60</td>
+            <td>27</td>
+            <td>Normal</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="report-section">
+      <h2>Important Actions</h2>
+      <ul class="advice-list" aria-label="Agricultural advice list">
+        <li class="section-header">Urgent Actions Needed:</li>
+        <li class="critical">Irrigate Field 2 immediately to restore soil moisture levels.</li>
+        <li class="critical">Implement shading options or irrigation for heat stress risk in Field 2.</li>
+
+        <li class="section-header">Warnings:</li>
+        <li class="warning">Monitor pest levels regularly in all fields; consider preventive treatments.</li>
+
+        <li class="section-header">General Advice:</li>
+        <li class="info">Continue routine crop health monitoring and soil testing monthly.</li>
+        <li class="info">Ensure optimal fertilization based on soil nutrient analysis.</li>
+      </ul>
+    </section>
+
+    <section class="report-section">
+      <h2>Crop Health Trend</h2>
+      <canvas id="ndviChart" aria-label="NDVI Crop Health Trend Chart" role="img"></canvas>
+      <script>
+        const ctx = document.getElementById('ndviChart').getContext('2d');
+        const ndviChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: ['Sept 21', 'Sept 28', 'Oct 5'],
+            datasets: [{
+              label: 'NDVI',
+              data: [0.78, 0.80, 0.82],
+              fill: true,
+              backgroundColor: 'rgba(76, 175, 80, 0.15)',
+              borderColor: 'rgba(76, 175, 80, 0.8)',
+              borderWidth: 3,
+              pointRadius: 5,
+              pointBackgroundColor: 'rgba(76, 175, 80, 1)',
+              tension: 0.3
+            }]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                suggestedMin: 0.6,
+                suggestedMax: 1,
+                title: { display: true, text: 'NDVI Value' }
+              },
+              x: {
+                title: { display: true, text: 'Date' }
+              }
+            },
+            plugins: {
+              legend: {
+                labels: { color: '#333' }
+              }
+            }
+          }
+        });
+      </script>
+    </section>
+
+    <section class="report-section">
+      <p><strong>Data Source:</strong> Real-time sensors, weather API, and satellite imagery</p>
+      <p><em>Generated by Enhanced Crop Advisory System</em></p>
+    </section>
+  </div>
+</main>
+ <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <div class="logo-image">
+                            <img src="image/logo.png" alt="KrushiBheru Logo">
+                        </div>
+                        <span class="logo-text">KrushiBheru</span>
+                    </div>
+                    <p class="footer-description">
+                        Empowering farmers with intelligent technology for sustainable agriculture.
+                    </p>
+                    <div class="footer-social">
+                        <a href="#" class="social-link" aria-label="Facebook">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="social-link" aria-label="Twitter">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="social-link" aria-label="LinkedIn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="social-link" aria-label="Instagram">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="footer-links-section">
+                    <div class="footer-column">
+                        <h3 class="footer-title">Navigation</h3>
+                        <ul class="footer-links">
+                            <li><a href="index.html">Home</a></li>
+                            <li><a href="cropanalysis.html">Crop Analysis</a></li>
+                            <li><a href="weather.html">Weather</a></li>
+                            <li><a href="mapping.html">Mapping</a></li>
+                            <li><a href="about.html">About Us</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-column">
+                        <h3 class="footer-title">Services</h3>
+                        <ul class="footer-links">
+                            <li><a href="#">AI Analysis</a></li>
+                            <li><a href="#">Weather Data</a></li>
+                            <li><a href="#">Field Mapping</a></li>
+                            <li><a href="#">Soil Health</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; <span class="year">2025</span> KrushiBheru. All rights reserved.</p>
+                <div class="footer-bottom-links">
+                    <a href="#">Privacy</a>
+                    <a href="#">Terms</a>
+                    <a href="#">Contact</a>
+                </div>
+            </div>
+        </div>
+        <!-- <script>
+          // Check login status
+          function isLoggedIn() {
+            return localStorage.getItem('loggedIn') === 'true';
+          }
+        
+          function handleNavigation() {
+            if (isLoggedIn()) return true;
+            alert('Please login or register to access full features.');
+            return false;
+          }
+        
+          // Assign button links
+          document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('gettingStarted').onclick = () => {
+              window.location.href = 'form.html';
+            };
+            document.getElementById('ourServices').onclick = () => {
+              window.location.href = 'about.html';
+            };
+          });
+        </script>
+         -->
+    </footer>
+</body>
+</html>

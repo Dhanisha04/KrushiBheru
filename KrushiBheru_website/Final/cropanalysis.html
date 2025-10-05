@@ -1,0 +1,1827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--access control -->
+  <!-- <script>
+    if (localStorage.getItem('loggedIn') !== 'true') {
+      alert('Please login to access this page.');
+      window.location.href = 'login.html';
+    }
+  </script> -->
+  
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>KrushiBheru - Multi-Plant Leaf Damage Detection</title>
+<!-- Teachable Machine + OpenCV -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+<script async src="https://docs.opencv.org/4.x/opencv.js"></script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- Icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<style>
+:root {
+  --primary-green: #4CAF50;
+  --primary-green-light: #4caf50;
+  --primary-green-dark: #45a049;
+  --secondary-blue: #1976d2;
+  --secondary-blue-light: #42a5f5;
+  --accent-orange: #ff8f00;
+  --accent-red: #d32f2f;
+  --success-green: #388e3c;
+  --warning-orange: #f57c00;
+  --error-red: #d32f2f;
+
+
+  --white: #ffffff;
+  --gray-50: #fafafa;
+  --gray-100: #f5f5f5;
+  --gray-200: #eeeeee;
+  --gray-300: #e0e0e0;
+  --gray-400: #bdbdbd;
+  --gray-500: #9e9e9e;
+  --gray-600: #757575;
+  --gray-700: #616161;
+  --gray-800: #424242;
+  --gray-900: #212121;
+
+
+  --gradient-primary: linear-gradient(135deg, #4CAF50, #45a049);
+  --gradient-secondary: linear-gradient(135deg, var(--secondary-blue-light), var(--secondary-blue));
+  --gradient-accent: linear-gradient(135deg, var(--accent-orange), #ff6f00);
+  --gradient-background: linear-gradient(135deg, #ffffff, #f8f9fa);
+
+
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+
+  --radius-sm: 6px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+
+
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+
+
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+}
+
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+
+/* Smooth scrolling for the entire page */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(69, 160, 73, 0.05)), 
+              url('https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?q=80&w=3000&auto=format&fit=crop') center/cover fixed;
+  color: #333;
+  line-height: 1.6;
+  padding: var(--space-lg);
+  min-height: 100vh;
+  padding-bottom: var(--space-2xl);
+  padding-top: 90px; /* Increased for navbar */
+  margin: 0;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Background overlay for better readability */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+      rgba(255, 255, 255, 0.9) 0%, 
+      rgba(248, 249, 250, 0.85) 50%, 
+      rgba(76, 175, 80, 0.1) 100%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space);
+}
+
+
+/* Header Styles - matching about page exactly */
+.header {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+
+  .header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 70px;
+  }
+
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+    margin-left: -60px;
+    margin-right:90px;
+    }
+
+
+.logo-image {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.logo-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+
+.logo-text {
+  font-size: 24px;
+  font-weight: 700;
+  color: #000000;
+}
+
+nav.navigation {
+    display: flex;
+    gap: 30px;
+    user-select: none;
+    font-size: 14px;
+}
+
+.navigation {
+  display: flex;
+  gap: 25px;
+  background: transparent;
+  align-items: center;
+}
+
+
+.nav-link {
+  text-decoration: none;
+  color: #151515;
+  font-weight: 500;
+  transition: color 0.3s ease;
+  position: relative;
+}
+
+
+.nav-link:hover,
+.nav-link.active {
+  color: #4CAF50;
+}
+
+
+.nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #4CAF50;
+  border-radius: 1px;
+}
+
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    font-size: 14px;
+    margin-left: 33px;
+}
+
+
+.login-link {
+  color: #151515;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+
+.login-link:hover {
+  color: #4CAF50;
+}
+
+
+.signup-btn {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 25px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+
+.signup-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+
+/* App Content - using about page theme */
+.app-header {
+  text-align: center;
+  margin-bottom: var(--space-2xl);
+  padding: var(--space-xl) 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-radius: var(--radius-2xl);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 0 4px 16px rgba(76, 175, 80, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+
+.app-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--gradient-primary);
+}
+
+
+.app-title {
+  font-size: var(--font-size-4xl);
+  font-weight: 700;
+  color: var(--primary-green);
+  margin-bottom: var(--space-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space);
+}
+
+
+.app-subtitle {
+  font-size: var(--font-size-lg);
+  color: var(--gray-600);
+  font-weight: 400;
+  margin-bottom: var(--space-lg);
+}
+
+
+#status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-lg);
+  font-weight: 500;
+  font-size: var(--font-size-sm);
+  transition: all 0.3s ease;
+}
+
+
+#status.loading {
+  background: var(--gray-100);
+  color: var(--gray-600);
+}
+
+
+#status.success {
+  background: #e8f5e9;
+  color: var(--success-green);
+}
+
+
+#status.error {
+  background: #ffebee;
+  color: var(--error-red);
+}
+
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space) var(--space-lg);
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  outline: none;
+  position: relative;
+  overflow: hidden;
+}
+
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+
+.btn:hover::before {
+  left: 100%;
+}
+
+
+.btn-primary {
+  background: var(--gradient-primary);
+  color: var(--white);
+  box-shadow: var(--shadow-md);
+}
+
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+
+.btn-secondary {
+  background: var(--gradient-secondary);
+  color: var(--white);
+  box-shadow: var(--shadow-md);
+}
+
+
+.btn-secondary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+
+.btn-accent {
+  background: var(--gradient-accent);
+  color: var(--white);
+  box-shadow: var(--shadow-md);
+}
+
+
+.btn-accent:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+
+.btn-danger {
+  background: linear-gradient(135deg, #ef5350, var(--error-red));
+  color: var(--white);
+  box-shadow: var(--shadow-sm);
+  font-size: var(--font-size-sm);
+  padding: var(--space-sm) var(--space);
+}
+
+
+.btn-danger:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+
+.btn-large {
+  padding: var(--space-lg) var(--space-2xl);
+  font-size: var(--font-size-lg);
+  border-radius: var(--radius-xl);
+}
+
+
+#addPlantBtn {
+  margin-bottom: var(--space-2xl);
+  display: flex;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+
+#plantsContainer {
+  display: grid;
+  gap: var(--space-xl);
+  margin-bottom: var(--space-2xl);
+}
+
+
+.plantBox {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 0 4px 16px rgba(76, 175, 80, 0.1);
+  padding: var(--space-xl);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+  animation: fadeIn 0.6s ease;
+  z-index: 1;
+}
+
+
+.plantBox::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--gradient-primary);
+}
+
+
+.plantBox:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+
+.plantHeader {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--primary-green);
+  margin-bottom: var(--space-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--space);
+}
+
+
+.plant-actions {
+  display: flex;
+  gap: var(--space);
+  margin-bottom: var(--space-lg);
+  flex-wrap: wrap;
+}
+
+
+.leafGallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--space-lg);
+  margin: var(--space-lg) 0;
+  padding: var(--space-lg);
+  background: var(--gray-50);
+  border-radius: var(--radius-lg);
+  border: 2px dashed var(--gray-300);
+  min-height: 120px;
+}
+
+
+.leafGallery.has-items {
+  border: 2px solid var(--primary-green);
+  background: var(--white);
+}
+
+
+.leafItem {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  padding: var(--space);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(76, 175, 80, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  transition: all 0.3s ease;
+  position: relative;
+  min-width: 140px;
+  animation: slideIn 0.4s ease;
+}
+
+
+.leafItem:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+
+.leafGallery img {
+  width: 100px;
+  height: 100px;
+  border-radius: var(--radius-lg);
+  object-fit: cover;
+  transition: all 0.3s ease;
+  border: 3px solid var(--gray-200);
+  max-width: 100%;
+}
+
+
+.leafItem img.healthy {
+  border-color: var(--success-green);
+}
+
+
+.leafItem img.moderate {
+  border-color: var(--warning-orange);
+}
+
+
+.leafItem img.damaged {
+  border-color: var(--error-red);
+}
+
+
+.result {
+  background: var(--gray-50);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  margin-top: var(--space-lg);
+  box-sizing: border-box;
+  width: 100%;
+  overflow-x: hidden;
+  border-left: 4px solid var(--primary-green);
+}
+
+
+.result-header {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--gray-800);
+  margin-bottom: var(--space);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+
+.result div {
+  padding: var(--space-sm) var(--space);
+  margin: var(--space-sm) 0;
+  border-radius: var(--radius);
+  background: var(--white);
+  box-shadow: var(--shadow-sm);
+  font-size: var(--font-size-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+
+.result div.summary {
+  background: var(--gradient-primary);
+  color: var(--white);
+  font-weight: 600;
+  font-size: var(--font-size-base);
+  padding: var(--space) var(--space-lg);
+  box-shadow: var(--shadow-md);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+
+.solutionText {
+  font-size: 0.9rem;
+  color: var(--secondary-blue);
+  margin-left: 20px;
+  font-style: italic;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+
+#cameraContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xl);
+}
+
+
+#video {
+  max-width: 90vw;
+  max-height: 60vh;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  border: 4px solid var(--white);
+}
+
+
+.camera-controls {
+  display: flex;
+  gap: var(--space-lg);
+  margin-top: var(--space-xl);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+
+.camera-tip {
+  text-align: center;
+  margin-top: var(--space-lg);
+  padding: var(--space) var(--space-lg);
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-lg);
+  color: var(--gray-800);
+  font-size: var(--font-size-sm);
+  backdrop-filter: blur(5px);
+  font-weight: 500;
+}
+
+
+.summary-box {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 2px solid var(--primary-green);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  margin-top: var(--space-lg);
+  box-shadow: 0 8px 32px rgba(76, 175, 80, 0.2), 0 4px 16px rgba(0, 0, 0, 0.1);
+  max-width: 100%;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  font-size: var(--font-size-base);
+  position: relative;
+  z-index: 1;
+  color: var(--gray-900);
+}
+
+
+.summary-box h3 {
+  margin-bottom: var(--space-sm);
+  color: var(--primary-green);
+  font-weight: 700;
+  font-size: var(--font-size-xl);
+}
+
+
+.summary-box p {
+  margin-bottom: var(--space-sm);
+  line-height: 1.4;
+}
+
+
+@media (max-width: 768px) {
+  .navigation {
+    display: none;
+  }
+  
+  body {
+    padding: var(--space);
+  }
+
+
+  .app-title {
+    font-size: var(--font-size-3xl);
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+
+  .plant-actions {
+    flex-direction: column;
+  }
+
+
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+
+  .leafGallery {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: var(--space);
+  }
+
+
+  .leafGallery img {
+    width: 80px;
+    height: 80px;
+  }
+
+
+  #video {
+    max-width: 95vw;
+    max-height: 50vh;
+  }
+
+
+  .camera-controls {
+    flex-direction: column;
+    width: 100%;
+  }
+
+
+  .camera-controls .btn {
+    width: 100%;
+  }
+}
+
+
+@media (max-width: 480px) {
+  .app-header {
+    padding: var(--space-lg) var(--space);
+  }
+
+
+  .plantBox {
+    padding: var(--space-lg);
+  }
+
+
+  .leafGallery {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    padding: var(--space);
+  }
+
+
+  .leafGallery img {
+    width: 70px;
+    height: 70px;
+  }
+
+
+  .result div.summary {
+    font-size: 1rem;
+    padding: 1rem 1.25rem;
+  }
+
+
+  .summary-box {
+    font-size: 0.9rem;
+    padding: 1rem 1.25rem;
+  }
+}
+
+
+@keyframes fadeIn {
+  from {opacity: 0; transform: translateY(20px);}
+  to {opacity: 1; transform: translateY(0);}
+}
+
+
+@keyframes slideIn {
+  from {opacity: 0; transform: translateX(-20px);}
+  to {opacity: 1; transform: translateX(0);}
+}
+
+
+@keyframes pulse {
+  0%, 100% {opacity: 1;}
+  50% {opacity: 0.7;}
+}
+
+
+.btn:active {
+  transform: translateY(0);
+}
+
+
+.loading {
+  animation: pulse 2s infinite;
+}
+
+
+.text-center {
+  text-align: center;
+}
+
+
+.mb-0 { margin-bottom: 0; }
+.mb-1 { margin-bottom: var(--space-xs); }
+.mb-2 { margin-bottom: var(--space-sm); }
+.mb-3 { margin-bottom: var(--space); }
+.mb-4 { margin-bottom: var(--space-lg); }
+.mb-5 { margin-bottom: var(--space-xl); }
+
+
+.mt-0 { margin-top: 0; }
+.mt-1 { margin-top: var(--space-xs); }
+.mt-2 { margin-top: var(--space-sm); }
+.mt-3 { margin-top: var(--space); }
+.mt-4 { margin-top: var(--space-lg); }
+.mt-5 { margin-top: var(--space-xl); }
+
+
+.hidden { display: none !important; }
+.visible { display: block !important; }
+
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+
+.btn:focus-visible {
+  outline: 2px solid var(--primary-green);
+  outline-offset: 2px;
+}
+
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --gray-50: #1a1a1a;
+    --gray-100: #2d2d2d;
+    --gray-200: #404040;
+    --gray-800: #e0e0e0;
+    --gray-900: #f5f5f5;
+    --white: #1e1e1e;
+    --gradient-background: linear-gradient(135deg, #1a1a1a, #0d1b0d);
+  }
+}
+
+
+.leafGallery:empty::before {
+  content: 'No leaves captured yet. Click "Add Leaf Photo" to get started.';
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray-500);
+  font-style: italic;
+  font-size: var(--font-size-sm);
+  min-height: 80px;
+  grid-column: 1 / -1;
+}
+
+/* Custom scrollbar styling for better UX */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(76, 175, 80, 0.6);
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(76, 175, 80, 0.8);
+}
+
+/* Enhanced hover effects */
+.leafItem:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(76, 175, 80, 0.15) !important;
+}
+
+.plantBox:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15), 0 6px 20px rgba(76, 175, 80, 0.2) !important;
+}
+
+/* Smooth transitions for all elements */
+* {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Override for specific elements that need different timing */
+.leafItem, .plantBox {
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+}
+
+</style>
+<link rel="stylesheet" href="styles-global.css" />
+</head>
+<body>
+  <!-- Glass-effect navbar added -->
+  <header class="header">
+    <div class="header-content">
+      <div class="logo">
+        <div class="logo-image">
+            <img src="image/logo.png" alt="KrushiBheru Logo" />
+        </div>
+        <span class="logo-text">KrushiBheru</span>
+      </div>
+      <nav class="navigation">
+        <a href="index.html" class="nav-link">Home</a>
+                <a href="cropanalysis.html" class="nav-link active">Crop Analysis</a>
+                <a href="framdetails.html" class="nav-link">Field Analysis</a>
+                <a href="field_dashboard.html" class="nav-link">Field Dashboard</a>
+                <a href="mapping.html" class="nav-link">Mapping</a>
+                <a href="weather.html" class="nav-link">Weather</a>
+                <a href="report.html" class="nav-link">Report</a>
+                <a href="about.html" class="nav-link">About Us</a>
+      </nav>
+      <div class="header-actions">
+        
+        <a href="index.html" class="signup-btn">Logout</a>
+      </div>
+    </div>
+  </header>
+
+
+<div class="container">
+    <header class="app-header">
+      <h1 class="app-title">
+        <i class="fas fa-seedling"></i>
+        Multi-Plant Leaf Damage Detection
+      </h1>
+      <p class="app-subtitle">AI-Powered Plant Health Analysis with Real-time Camera Detection</p>
+      <div id="status" class="loading">
+        <i class="fas fa-spinner fa-spin"></i>
+        Loading AI model...
+      </div>
+    </header>
+
+
+  <div class="text-center">
+    <button id="addPlantBtn" class="btn btn-primary btn-large">
+      <i class="fas fa-plus-circle"></i>
+      Add New Plant
+    </button>
+  </div>
+
+
+  <div id="plantsContainer"></div>
+
+
+  <div id="cameraContainer" class="hidden">
+    <video id="video" autoplay playsinline muted></video>
+    <div class="camera-controls">
+      <button id="captureBtn" class="btn btn-accent btn-large">
+        <i class="fas fa-camera"></i>
+        Capture Leaf
+      </button>
+      <button id="closeCamBtn" class="btn btn-secondary btn-large">
+        <i class="fas fa-times-circle"></i>
+        Close Camera
+      </button>
+    </div>
+    <div class="camera-tip">
+      <i class="fas fa-info-circle"></i>
+      Point your rear camera at the leaf and ensure good lighting for best results
+    </div>
+  </div>
+</div>
+
+
+<canvas id="canvas" style="display:none;"></canvas>
+
+
+<script>
+const diseaseSolutions = {
+  'Bacterial Blight': 'Use streptocycline + copper oxychloride',
+  'Blast': 'Use Propineb (70% WP) for Non-basmati',
+  'Brown Spot': 'Use Difenoconazole 25% EC for Non-basmati and Mancozeb 75% WP for Basmati',
+  'Tungro': 'Use Buprofezin for Non-basmati and Pymetrozine 50% WG for Basmati'
+};
+
+
+let model = null;
+let maxPredictions = 0;
+const statusDiv = document.getElementById('status');
+
+
+async function loadModel(){
+  try {
+    statusDiv.innerHTML = '<i class="fas fa-download"></i> Loading AI model...';
+    statusDiv.className = 'loading';
+
+
+    model = await tmImage.load('model/model.json','model/metadata.json');
+    maxPredictions = model.getTotalClasses();
+
+
+    statusDiv.innerHTML = '<i class="fas fa-check-circle"></i> AI Model Ready';
+    statusDiv.className = 'success';
+  } catch(err) {
+    statusDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Model failed to load';
+    statusDiv.className = 'error';
+    console.error(err);
+  }
+}
+loadModel();
+
+
+const plantsContainer = document.getElementById('plantsContainer');
+const addPlantBtn = document.getElementById('addPlantBtn');
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const cameraContainer = document.getElementById('cameraContainer');
+const captureBtn = document.getElementById('captureBtn');
+const closeCamBtn = document.getElementById('closeCamBtn');
+
+
+let currentPlantId = null;
+let activeStream = null;
+let cameraDeviceId = null;
+
+
+addPlantBtn.addEventListener('click', () => {
+  const plantNumber = plantsContainer.children.length + 1;
+  const plantId = 'plant' + plantNumber;
+  const div = document.createElement('div');
+  div.className = 'plantBox';
+  div.id = plantId;
+  div.innerHTML = `
+    <div class="plantHeader">
+      <i class="fas fa-leaf"></i>
+      Plant ${plantNumber}
+    </div>
+    <div class="plant-actions">
+      <button class="btn btn-secondary" onclick="startCameraForPlant('${plantId}')">
+        <i class="fas fa-camera"></i>
+        Add Leaf Photo
+      </button>
+      <button class="btn btn-primary" onclick="finishPlant('${plantId}')">
+        <i class="fas fa-check"></i>
+        Complete Analysis
+      </button>
+    </div>
+    <div class="leafGallery" id="${plantId}-gallery"></div>
+    <div class="result">
+      <div class="result-header">
+        <i class="fas fa-chart-bar"></i>
+        Analysis Results
+      </div>
+      <div id="${plantId}-result"></div>
+    </div>
+  `;
+  plantsContainer.appendChild(div);
+});
+
+
+function stopActiveStream(){
+  if(activeStream){
+    activeStream.getTracks().forEach(t => t.stop());
+    activeStream = null;
+  }
+  if(video){
+    video.srcObject = null;
+  }
+  cameraContainer.classList.add('hidden');
+}
+
+
+async function pickRearDeviceId(){
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const videoInputs = devices.filter(d => d.kind === 'videoinput');
+    const labelMatchers = ['back','rear','environment','env','camera 2','camera2','rear camera'];
+    for(const dev of videoInputs){
+      const label = (dev.label || '').toLowerCase();
+      for(const m of labelMatchers){
+        if(label.includes(m)){
+          return dev.deviceId;
+        }
+      }
+    }
+    if(videoInputs.length > 0) {
+      return videoInputs[videoInputs.length - 1].deviceId;
+    }
+    return null;
+  } catch(err){
+    console.warn('enumerateDevices failed:', err);
+    return null;
+  }
+}
+
+
+async function startCameraForPlant(plantId){
+  currentPlantId = plantId;
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    alert('❌ Camera not supported. Please use HTTPS and a modern browser.');
+    currentPlantId = null;
+    return;
+  }
+  try {
+    let tempStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    activeStream = tempStream;
+    video.srcObject = activeStream;
+    cameraContainer.classList.remove('hidden');
+    cameraDeviceId = await pickRearDeviceId();
+    if(cameraDeviceId){
+      stopActiveStream();
+      try {
+        activeStream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: cameraDeviceId } }, audio: false });
+        video.srcObject = activeStream;
+        cameraContainer.classList.remove('hidden');
+      } catch(err2){
+        stopActiveStream();
+        try {
+          activeStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false });
+          video.srcObject = activeStream;
+          cameraContainer.classList.remove('hidden');
+        } catch(err3){
+          activeStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+          video.srcObject = activeStream;
+          cameraContainer.classList.remove('hidden');
+        }
+      }
+    } else {
+      stopActiveStream();
+      try {
+        activeStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false });
+        video.srcObject = activeStream;
+        cameraContainer.classList.remove('hidden');
+      } catch(err){
+        activeStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        video.srcObject = activeStream;
+        cameraContainer.classList.remove('hidden');
+      }
+    }
+  } catch(err){
+    alert('Camera error: ' + err.message);
+    currentPlantId = null;
+    stopActiveStream();
+  }
+}
+
+
+captureBtn.addEventListener('click', handleCapture);
+closeCamBtn.addEventListener('click', () => {
+  stopActiveStream();
+  currentPlantId = null;
+});
+
+
+async function handleCapture(){
+  if(!currentPlantId){
+    alert('No plant selected.');
+    return;
+  }
+  if(!video || !video.videoWidth){
+    alert('Video not ready yet — try again.');
+    return;
+  }
+  const maxW = 800;
+  const vw = video.videoWidth;
+  const vh = video.videoHeight;
+  const scale = (vw > maxW) ? (maxW / vw) : 1;
+  canvas.width = Math.round(vw * scale);
+  canvas.height = Math.round(vh * scale);
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  let damagePercent = 0;
+  try {
+    damagePercent = detectDamage(canvas);
+  } catch(err){
+    damagePercent = 0;
+  }
+
+
+  let topClass = 'Unknown';
+  try {
+    if(model){
+      const predictions = await model.predict(canvas);
+      predictions.sort((a,b)=>b.probability - a.probability);
+      if(predictions.length) topClass = predictions[0].className;
+    }
+  } catch(err){
+  }
+  console.log('Predicted class:', topClass);
+
+
+  const gallery = document.getElementById(currentPlantId + '-gallery');
+  const resultDiv = document.getElementById(currentPlantId + '-result');
+  gallery.classList.add('has-items');
+
+
+  const item = document.createElement('div');
+  item.className = 'leafItem';
+
+
+  const img = document.createElement('img');
+  img.src = canvas.toDataURL('image/jpeg', 0.9);
+  img.alt = 'leaf';
+
+
+  const damage = Number(damagePercent);
+  if(damage <= 10) {
+    img.className = 'healthy';
+  } else if(damage <= 50) {
+    img.className = 'moderate';
+  } else {
+    img.className = 'damaged';
+  }
+
+
+  const del = document.createElement('button');
+  del.className = 'btn btn-danger';
+  del.innerHTML = '<i class="fas fa-trash"></i>';
+  del.onclick = () => {
+    item.remove();
+    const lines = Array.from(resultDiv.children);
+    for(let i=lines.length-1;i>=0;i--){
+      const t = lines[i].innerText || '';
+      if(t.includes(topClass) && t.includes(String(damagePercent))) { 
+        lines[i].remove(); 
+        break; 
+      }
+    }
+    if(gallery.children.length === 0) {
+      gallery.classList.remove('has-items');
+    }
+  };
+
+
+  item.appendChild(img);
+  item.appendChild(del);
+  gallery.appendChild(item);
+
+
+  const infoLine = document.createElement('div');
+  infoLine.innerHTML = `<i class="fas fa-leaf"></i> <strong>${topClass}</strong> - Damage: <strong>${damage.toFixed(1)}%</strong>`;
+  resultDiv.appendChild(infoLine);
+
+
+  stopActiveStream();
+  currentPlantId = null;
+}
+
+
+function finishPlant(plantId){
+  const resultDiv = document.getElementById(plantId + '-result');
+  // Remove previous summary box if exists
+  const existingSummary = resultDiv.querySelector('.summary-box');
+  if(existingSummary) existingSummary.remove();
+
+
+  const lines = Array.from(resultDiv.children);
+  const damages = [];
+  const diseases = [];
+
+
+  for(const el of lines){
+    const txt = el.innerText || '';
+    const dmgMatch = txt.match(/Damage:\s*([\d.]+)%/);
+    const diseaseMatch = txt.match(/^\s*(.+?)\s*-/);
+    if(dmgMatch) damages.push(parseFloat(dmgMatch[1]));
+    if(diseaseMatch) diseases.push(diseaseMatch[1]);
+  }
+  if(damages.length === 0){
+    alert('⚠️ No leaves added! Please capture some leaf photos first.');
+    return;
+  }
+  const avgDamage = (damages.reduce((a,b)=>a+b,0)/damages.length).toFixed(1);
+
+
+  const diseaseCount = {};
+  for(const d of diseases){
+    diseaseCount[d] = (diseaseCount[d] || 0) + 1;
+  }
+
+
+  let mostCommonDisease = null;
+  let maxCount = 0;
+  for(const [d,count] of Object.entries(diseaseCount)){
+    if(count > maxCount){
+      maxCount = count;
+      mostCommonDisease = d;
+    }
+  }
+
+
+  const solutionKey = Object.keys(diseaseSolutions).find(key => key.toLowerCase() === mostCommonDisease?.toLowerCase());
+  const solutionText = solutionKey ? diseaseSolutions[solutionKey] : null;
+
+
+  const summaryBox = document.createElement('div');
+  summaryBox.className = 'summary-box';
+
+
+  const title = document.createElement('h3');
+  title.textContent = 'Final Plant Analysis';
+  summaryBox.appendChild(title);
+
+
+  const damagePara = document.createElement('p');
+  damagePara.innerHTML = `<strong>Average Damage:</strong> ${avgDamage}%`;
+  summaryBox.appendChild(damagePara);
+
+
+  if(mostCommonDisease && solutionText){
+    const diseasePara = document.createElement('p');
+    diseasePara.innerHTML = `<strong>Most Common Disease Detected:</strong> ${mostCommonDisease}`;
+    summaryBox.appendChild(diseasePara);
+
+
+    const solutionPara = document.createElement('p');
+    solutionPara.innerHTML = `<strong>Recommended Solution:</strong> ${solutionText}`;
+    summaryBox.appendChild(solutionPara);
+  }
+
+
+  resultDiv.appendChild(summaryBox);
+}
+
+
+function detectDamage(canvasEl){
+  if(typeof cv === 'undefined' || !cv.imread){
+    return 0;
+  }
+  const src = cv.imread(canvasEl);
+  const hsv = new cv.Mat();
+
+
+  cv.cvtColor(src, hsv, cv.COLOR_RGBA2RGB);
+  cv.cvtColor(hsv, hsv, cv.COLOR_RGB2HSV);
+
+
+  const lower_green = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), [25,40,40,0]);
+  const upper_green = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), [90,255,255,255]);
+  const leafMask = new cv.Mat();
+  cv.inRange(hsv, lower_green, upper_green, leafMask);
+
+
+  const lower_brown = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), [10,50,50,0]);
+  const upper_brown = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), [30,255,200,255]);
+  const diseaseMask = new cv.Mat();
+  cv.inRange(hsv, lower_brown, upper_brown, diseaseMask);
+
+
+  cv.bitwise_and(diseaseMask, leafMask, diseaseMask);
+
+
+  const leafPixels = cv.countNonZero(leafMask);
+  const diseasePixels = cv.countNonZero(diseaseMask);
+  const damagePercent = leafPixels > 0 ? (diseasePixels / leafPixels) * 100 : 0;
+
+
+  src.delete(); hsv.delete();
+  lower_green.delete(); upper_green.delete();
+  leafMask.delete();
+  lower_brown.delete(); upper_brown.delete();
+  diseaseMask.delete();
+
+
+  return damagePercent;
+}
+
+
+window.startCameraForPlant = startCameraForPlant;
+window.finishPlant = finishPlant;
+</script>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-brand">
+            <div class="footer-logo">
+                    <span class="logo-text">KrushiBheru</span>
+                </div>
+                <p class="footer-description">
+                    Revolutionizing agriculture through advanced technology and sustainable farming practices.
+                </p>
+                <div class="social-links">
+                    <a href="#" class="social-link">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-link">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 0 1-1.93.07 4.28 4.28 0 0 0 4 2.98 8.521 8.521 0 0 1-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z"/>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-link">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="footer-links-section">
+                <div class="footer-column">
+                    <h4 class="footer-title">Navigation</h4>
+                    <ul class="footer-links">
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="cropanalysis.html">Crop Analysis</a></li>
+                        <li><a href="data.html">Data</a></li>
+                        <li><a href="mapping.html">Mapping</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h4 class="footer-title">Services</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">Crop Monitoring</a></li>
+                        <li><a href="#">Weather Analysis</a></li>
+                        <li><a href="#">Yield Prediction</a></li>
+                        <li><a href="#">Farm Management</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h4 class="footer-title">Support</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+            <div class="footer-bottom">
+            <div class="footer-copyright">
+                <p>&copy; <span class="year">2025</span> KrushiBheru. All rights reserved.</p>
+            </div>
+            <div class="footer-bottom-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Cookie Policy</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<style>
+/* Enhanced Attractive Footer */
+.footer {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+  color: #ffffff;
+  padding: 50px 0 25px;
+  margin-top: 60px;
+  border-top: 4px solid transparent;
+  border-image: linear-gradient(90deg, #4CAF50, #45a049, #66BB6A, #4CAF50) 1;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Animated background pattern */
+.footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(76, 175, 80, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(76, 175, 80, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(76, 175, 80, 0.05) 0%, transparent 50%);
+  animation: backgroundShift 15s ease-in-out infinite;
+  z-index: 0;
+}
+
+@keyframes backgroundShift {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.1); }
+}
+
+/* Glowing top border animation */
+.footer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #4CAF50, #45a049, #66BB6A, #4CAF50);
+  background-size: 200% 100%;
+  animation: borderGlow 3s ease-in-out infinite;
+  z-index: 1;
+}
+
+@keyframes borderGlow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 40px;
+  margin-bottom: 35px;
+  position: relative;
+  z-index: 2;
+}
+
+.footer-brand {
+  flex: 1;
+  min-width: 280px;
+  animation: fadeInLeft 0.8s ease-out;
+}
+
+@keyframes fadeInLeft {
+  from { opacity: 0; transform: translateX(-30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.footer-logo .logo-text {
+  font-size: 26px;
+  font-weight: 700;
+  color: #4CAF50;
+  text-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+  transition: all 0.3s ease;
+}
+
+.footer-logo:hover .logo-text {
+  text-shadow: 0 0 20px rgba(76, 175, 80, 0.6);
+  transform: scale(1.05);
+}
+
+.footer-description {
+  color: #cccccc;
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.social-links {
+  display: flex;
+  gap: 12px;
+}
+
+.footer-links-section {
+  display: flex;
+  gap: 60px;
+  flex-wrap: wrap;
+  animation: fadeInRight 0.8s ease-out 0.2s both;
+}
+
+@keyframes fadeInRight {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.footer-column {
+  min-width: 120px;
+}
+
+.footer-title {
+  color: #4CAF50;
+  font-size: 17px;
+  font-weight: 600;
+  margin-bottom: 18px;
+  position: relative;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.footer-title::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 30px;
+  height: 2px;
+  background: linear-gradient(90deg, #4CAF50, #66BB6A);
+  border-radius: 1px;
+  transition: width 0.3s ease;
+}
+
+.footer-column:hover .footer-title::after {
+  width: 50px;
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-links li {
+  margin-bottom: 8px;
+}
+
+.footer-links a {
+  color: #cccccc;
+  text-decoration: none;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  position: relative;
+  display: inline-block;
+}
+
+.footer-links a::before {
+  content: '';
+  position: absolute;
+  left: -15px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 1px;
+  background: #4CAF50;
+  transition: width 0.3s ease;
+}
+
+.footer-links a:hover {
+  color: #4CAF50;
+  transform: translateX(8px);
+  text-shadow: 0 0 8px rgba(76, 175, 80, 0.4);
+}
+
+.footer-links a:hover::before {
+  width: 10px;
+}
+
+.social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #333333, #404040);
+  border-radius: 10px;
+  color: #cccccc;
+  text-decoration: none;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.social-link::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(76, 175, 80, 0.3), transparent);
+  transition: left 0.6s ease;
+}
+
+.social-link:hover::before {
+  left: 100%;
+}
+
+.social-link:hover {
+  background: linear-gradient(135deg, #4CAF50, #66BB6A);
+  color: white;
+  transform: translateY(-4px) scale(1.1);
+  box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+}
+
+.footer-bottom {
+  border-top: 1px solid rgba(76, 175, 80, 0.2);
+  padding-top: 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  position: relative;
+  z-index: 2;
+  animation: fadeInUp 0.8s ease-out 0.4s both;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.footer-copyright p {
+  color: #999999;
+  font-size: 14px;
+  margin: 0;
+}
+
+.footer-bottom-links {
+  display: flex;
+  gap: 25px;
+}
+
+.footer-bottom-links a {
+  color: #999999;
+  text-decoration: none;
+  font-size: 13px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.footer-bottom-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: #4CAF50;
+  transition: width 0.3s ease;
+}
+
+.footer-bottom-links a:hover {
+  color: #4CAF50;
+  text-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+}
+
+.footer-bottom-links a:hover::after {
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .footer-content {
+    flex-direction: column;
+    gap: 30px;
+  }
+  
+  .footer-links-section {
+    gap: 30px;
+  }
+  
+  .footer-bottom {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+  
+  .footer-bottom-links {
+    gap: 15px;
+  }
+}
+</style>
+
+</body>
+</html>

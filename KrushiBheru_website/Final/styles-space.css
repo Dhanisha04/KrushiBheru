@@ -1,0 +1,158 @@
+/* Global Space Theme (inspired aesthetic) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+
+/* Base */
+html { scroll-behavior: smooth; }
+body.space-theme {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+  color: #ffffff;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+body.space-theme::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(2px 2px at 20px 30px, rgba(34,197,94,.35), transparent),
+    radial-gradient(2px 2px at 40px 70px, rgba(16,185,129,.25), transparent),
+    radial-gradient(1px 1px at 90px 40px, rgba(34,197,94,.30), transparent),
+    radial-gradient(1px 1px at 130px 80px, rgba(22,163,74,.25), transparent);
+  background-size: 200px 150px;
+  background-repeat: repeat;
+  animation: st-float 20s ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+@keyframes st-float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-18px)} }
+
+/* Animated background shift for entire page */
+body.space-theme { background-size: 200% 200%; animation: st-bg 18s ease-in-out infinite; }
+@keyframes st-bg { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+
+/* Containers/cards (glass) */
+.space-card {
+  background: linear-gradient(135deg, rgba(15,23,42,.9), rgba(30,41,59,.82));
+  border: 2px solid #22c55e;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(34,197,94,.22);
+  backdrop-filter: blur(10px);
+}
+
+/* Headings */
+.space-heading {
+  color: #22c55e;
+  text-shadow: 0 0 10px rgba(34,197,94,.45);
+  font-weight: 800;
+}
+
+/* Buttons */
+.space-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 10px;
+  border: none;
+  color: #fff;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  box-shadow: 0 10px 24px rgba(34,197,94,.38);
+  cursor: pointer;
+  transition: transform .25s ease, box-shadow .25s ease, filter .2s ease;
+}
+.space-btn:hover { filter: brightness(1.07); box-shadow: 0 14px 34px rgba(34,197,94,.5); transform: translateY(-2px); }
+.space-btn:active { transform: translateY(0) scale(.98); box-shadow: 0 8px 20px rgba(34,197,94,.3); }
+
+/* Header bar */
+.space-header {
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  border-bottom: 2px solid #22c55e;
+  box-shadow: 0 4px 20px rgba(34,197,94,.25);
+}
+.space-title {
+  font-size: clamp(1.5rem, 2.5vw, 2.5rem);
+  font-weight: 800;
+  background: linear-gradient(45deg, #22c55e, #16a34a, #34d399);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+
+/* Sections separators */
+.space-scan-line { position: relative; }
+.space-scan-line::before {
+  content: '';
+  position: absolute; left: 0; right: 0; top: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, #22c55e, transparent);
+  animation: st-scan 3s linear infinite;
+}
+@keyframes st-scan { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
+
+/* Status dot */
+.space-status { width: 10px; height: 10px; border-radius: 50%; display: inline-block; box-shadow: 0 0 12px currentColor; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #1a1a2e; }
+::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #22c55e, #16a34a); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: linear-gradient(135deg, #16a34a, #15803d); }
+
+/* HERO: animated gradient + neon grid + orbs */
+.space-hero {
+  position: relative;
+  background: radial-gradient(1200px 800px at 10% 10%, rgba(34,197,94,.10), transparent 60%),
+              radial-gradient(1000px 600px at 90% 30%, rgba(16,185,129,.08), transparent 60%),
+              linear-gradient(135deg, rgba(10,10,20,.7), rgba(15,20,35,.85));
+  overflow: hidden;
+}
+.space-hero::before { /* Star layer 2 */
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,.35), transparent),
+    radial-gradient(1px 1px at 30% 40%, rgba(255,255,255,.25), transparent),
+    radial-gradient(2px 2px at 70% 30%, rgba(255,255,255,.18), transparent),
+    radial-gradient(1px 1px at 85% 70%, rgba(255,255,255,.28), transparent);
+  background-repeat: repeat;
+  background-size: 300px 300px;
+  animation: st-parallax 35s linear infinite;
+  pointer-events: none; z-index: 0;
+}
+.space-hero::after { /* Neon crop grid */
+  content: '';
+  position: absolute; inset: -50% -50% -50% -50%;
+  background: repeating-linear-gradient( to right, rgba(34,197,94,.12) 0 1px, transparent 1px 80px),
+              repeating-linear-gradient( to bottom, rgba(34,197,94,.12) 0 1px, transparent 1px 80px);
+  transform: perspective(600px) rotateX(65deg) translateY(40%);
+  filter: blur(0.4px);
+  opacity: .25; pointer-events: none; z-index: 0;
+}
+@keyframes st-parallax { 0%{transform:translateY(0)} 100%{transform:translateY(-300px)} }
+
+.neon-orbs { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.neon-orbs span {
+  position: absolute; display: block; width: 28vmin; height: 28vmin; border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(16,185,129,.75), rgba(22,163,74,.25) 60%, transparent 70%);
+  filter: blur(12px);
+  animation: orb-float 18s ease-in-out infinite;
+}
+.neon-orbs span:nth-child(1){ top:10%; left:5%; animation-delay: -2s; }
+.neon-orbs span:nth-child(2){ top:20%; right:12%; animation-delay: -8s; }
+.neon-orbs span:nth-child(3){ bottom:10%; left:15%; animation-delay: -12s; }
+.neon-orbs span:nth-child(4){ bottom:15%; right:5%; animation-delay: -4s; }
+@keyframes orb-float { 0%,100%{ transform: translate3d(0,0,0) } 50%{ transform: translate3d(0,-30px,0) scale(1.03) } }
+
+/* Reveal animations */
+.reveal { opacity: 0; transform: translateY(24px); animation: reveal-up .8s ease forwards; }
+.reveal.delay-1 { animation-delay: .15s; }
+.reveal.delay-2 { animation-delay: .3s; }
+.reveal.delay-3 { animation-delay: .45s; }
+@keyframes reveal-up { to { opacity: 1; transform: translateY(0); } }
+
+/* Elevated CTA pulse */
+.space-btn.pulse { box-shadow: 0 0 0 0 rgba(34,197,94,.45); animation: pulse-cta 2.2s infinite; }
+@keyframes pulse-cta { 0%{ box-shadow: 0 0 0 0 rgba(34,197,94,.5) } 70%{ box-shadow: 0 0 0 20px rgba(34,197,94,0) } 100%{ box-shadow: 0 0 0 0 rgba(34,197,94,0) } }
+
+
+
